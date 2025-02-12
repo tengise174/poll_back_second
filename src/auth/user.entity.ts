@@ -1,5 +1,12 @@
 import { Task } from '../tasks/task.entity';
-import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  ManyToMany,
+  OneToMany,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
+import { Poll } from 'src/polls/poll.entity';
 
 @Entity()
 export class User {
@@ -12,6 +19,16 @@ export class User {
   @Column()
   password: string;
 
-  @OneToMany((_type) => Task, (task) => task.user, { eager: true })
+  @OneToMany(() => Task, (task) => task.user, { eager: true })
   tasks: Task[];
+
+  @OneToMany(() => Poll, (poll) => poll.owner, {
+    eager: true,
+    cascade: true,
+    onDelete: 'CASCADE',
+  })
+  ownedPolls: Poll[];
+
+  @ManyToMany(() => Poll, (poll) => poll.pollsters)
+  polls: Poll[];
 }
