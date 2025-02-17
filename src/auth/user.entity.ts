@@ -1,4 +1,3 @@
-import { Task } from '../tasks/task.entity';
 import {
   Column,
   Entity,
@@ -7,6 +6,7 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { Poll } from 'src/polls/poll.entity';
+import { Exclude } from 'class-transformer';
 
 @Entity()
 export class User {
@@ -17,18 +17,17 @@ export class User {
   username: string;
 
   @Column()
+  @Exclude({ toPlainOnly: true })
   password: string;
 
-  @OneToMany(() => Task, (task) => task.user, { eager: true })
-  tasks: Task[];
-
   @OneToMany(() => Poll, (poll) => poll.owner, {
-    eager: true,
     cascade: true,
     onDelete: 'CASCADE',
   })
   ownedPolls: Poll[];
 
-  @ManyToMany(() => Poll, (poll) => poll.pollsters)
+  @ManyToMany(() => Poll, (poll) => poll.pollsters, {
+    cascade: ['insert', 'update'],
+  })
   polls: Poll[];
 }

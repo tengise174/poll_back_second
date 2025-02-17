@@ -29,7 +29,7 @@ export class PollsService {
   async getAllPoll(user: User) {
     return this.pollRepository.find({
       where: { owner: { id: user.id } },
-      relations: ['owner'],
+      relations: ['questions'],
     });
   }
 
