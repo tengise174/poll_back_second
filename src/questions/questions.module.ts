@@ -6,10 +6,11 @@ import { Answer } from 'src/answers/answer.entity';
 import { Question } from './question.entity';
 import { AnswersModule } from 'src/answers/answers.module';
 import { AuthModule } from 'src/auth/auth.module';
+import { Poll } from 'src/polls/poll.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Question, Answer]),
+    TypeOrmModule.forFeature([Question, Answer, Poll]),
     forwardRef(() => AnswersModule),
     AuthModule,
   ],

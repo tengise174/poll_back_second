@@ -1,0 +1,14 @@
+import { Module } from '@nestjs/common';
+import { RecordController } from './record.controller';
+import { RecordService } from './record.service';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { Record } from './record.entity';
+import { Answer } from 'src/answers/answer.entity';
+import { AuthModule } from 'src/auth/auth.module';
+
+@Module({
+  imports: [TypeOrmModule.forFeature([Record, Answer]), AuthModule],
+  controllers: [RecordController],
+  providers: [RecordService],
+})
+export class RecordModule {}
