@@ -5,9 +5,10 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { Record } from './record.entity';
 import { Answer } from 'src/answers/answer.entity';
 import { AuthModule } from 'src/auth/auth.module';
+import { Question } from 'src/questions/question.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Record, Answer]), AuthModule],
+  imports: [TypeOrmModule.forFeature([Record, Answer, Question]), AuthModule],
   controllers: [RecordController],
   providers: [RecordService],
 })
