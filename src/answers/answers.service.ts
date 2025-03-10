@@ -21,6 +21,15 @@ export class AnswersService {
     return this.answerRepository.save(answer);
   }
 
+  async createAnswers(createAnswersDto: CreateAnswerDto[], question: Question) {
+    const answers = createAnswersDto.map((dto) => {
+      const answer = this.answerRepository.create(dto);
+      answer.question = question;
+      return answer;
+    });
+    return this.answerRepository.save(answers);
+  }
+
   async getAnswers(question: Question) {
     return this.answerRepository.find({ where: question });
   }
