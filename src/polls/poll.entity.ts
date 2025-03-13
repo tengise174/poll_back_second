@@ -30,3 +30,5 @@ export class Poll {
   @OneToMany(() => Question, (question) => question.poll)
   questions: Question[];
 }
+
+// Window commit
