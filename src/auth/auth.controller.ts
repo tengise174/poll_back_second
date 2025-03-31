@@ -1,4 +1,4 @@
-import { Body, Controller, ForbiddenException, Get, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, ForbiddenException, Get, Post, Query, UseGuards } from '@nestjs/common';
 import {
   SignInCredentialsDto,
   SignUpCredentialsDto,
@@ -77,5 +77,13 @@ export class AuthController {
   @UseGuards(AuthGuard())
   async updateProfile(@GetUser() user: User, @Body() updateProfileDto: UpdateProfileDto) {
     return this.authService.updateProfile(user, updateProfileDto);
+  }
+
+  @Get('/check-user')
+  async checkUser(@Query('username') username: string) {
+    if(!username) {
+      throw new ForbiddenException('No username provided');
+    }
+    return this.authService.checkUserExists(username);
   }
 }

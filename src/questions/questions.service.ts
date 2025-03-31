@@ -53,4 +53,8 @@ export class QuestionsService {
 
     this.questionRepository.remove(questions);
   }
+
+  async deleteQuestionsByPoll(poll: Poll) {
+    await this.questionRepository.delete({ poll: { id: poll.id } });
+  }
 }

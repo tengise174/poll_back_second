@@ -11,13 +11,12 @@ import {
 } from 'class-validator';
 import { CreateQuestionDto } from 'src/questions/dto/create-question.dto';
 
-
 class PollsterDto {
   @IsString()
   username: string;
 }
 
-export class CreatePollDto {
+export class UpdatePollDto {
   @IsNotEmpty()
   @IsString()
   title: string;
@@ -91,11 +90,10 @@ export class CreatePollDto {
   @ValidateNested({ each: true })
   @Type(() => CreateQuestionDto)
   questions: CreateQuestionDto[];
-  
-  @IsOptional()
-  @IsArray()
-  @ValidateNested({ each: true })
-  @Type(() => PollsterDto)
-  pollsters: PollsterDto[];
 
+    @IsOptional()
+    @IsArray()
+    @ValidateNested({ each: true })
+    @Type(() => PollsterDto)
+    pollsters: PollsterDto[];
 }

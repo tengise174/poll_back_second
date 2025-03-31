@@ -192,4 +192,14 @@ export class AuthService {
       await this.userRepository.save(user);
       return { message: 'Profile successfully updated' };
   }
+
+async checkUserExists(username: string): Promise<{ exists: boolean }> {
+  const user = await this.userRepository.findOne({
+    where: { username },
+    select: ['id'], 
+  });
+  
+  return { exists: !!user };
+}
+
 }

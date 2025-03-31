@@ -1,9 +1,10 @@
-import { Exclude } from 'class-transformer';
+import { Exclude, Transform } from 'class-transformer';
 import { User } from 'src/auth/user.entity';
 import { Question } from 'src/questions/question.entity';
 import {
   Column,
   Entity,
+  JoinTable,
   ManyToMany,
   ManyToOne,
   OneToMany,
@@ -40,6 +41,10 @@ export class Poll {
   @ManyToMany(() => User, (user) => user.polls, {
     cascade: ['insert', 'update'],
   })
+  @JoinTable()
+  @Transform(({ value }) =>
+    value.map((user: User) => ({ username: user.username })),
+  )
   pollsters: User[];
 
   @OneToMany(() => Question, (question) => question.poll)
@@ -69,5 +74,3 @@ export class Poll {
   @Column({ nullable: true })
   pollsterNumber: number;
 }
-
-// Window commit

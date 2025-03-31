@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Put, UseGuards } from '@nestjs/common';
 import { PollsService } from './polls.service';
 import { AuthGuard } from '@nestjs/passport';
 import { User } from 'src/auth/user.entity';
@@ -33,5 +33,14 @@ export class PollsController {
     @Body() createPollDto: CreatePollDto,
   ): Promise<Poll> {
     return this.pollService.createPoll(user, createPollDto);
+  }
+
+  @Put(':id')
+  updatePoll(
+    @Param('id') pollId: string,
+    @GetUser() user: User,
+    @Body() updatePollDto: CreatePollDto,
+  ) {
+    return this.pollService.updatePoll(pollId, user, updatePollDto);
   }
 }

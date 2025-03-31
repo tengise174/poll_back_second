@@ -5,9 +5,10 @@ import { AuthModule } from 'src/auth/auth.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Poll } from './poll.entity';
 import { QuestionsModule } from 'src/questions/questions.module';
+import { User } from 'src/auth/user.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Poll]), AuthModule, QuestionsModule],
+  imports: [TypeOrmModule.forFeature([Poll, User]), AuthModule, QuestionsModule],
   controllers: [PollsController],
   providers: [PollsService],
 })
