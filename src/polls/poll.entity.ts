@@ -18,6 +18,18 @@ export class Poll {
   @Column()
   title: string;
 
+  @Column()
+  greetingMessage: string;
+
+  @Column()
+  btnLabel: string;
+
+  @Column()
+  endTitle: string;
+
+  @Column()
+  thankYouMessage: string;
+
   @ManyToOne(() => User, (user) => user.ownedPolls, { eager: false })
   @Exclude({ toPlainOnly: true })
   owner: User;
@@ -29,6 +41,20 @@ export class Poll {
 
   @OneToMany(() => Question, (question) => question.poll)
   questions: Question[];
+
+  @Column()
+  startDate: Date;
+
+  @Column()
+  endDate: Date;
+
+  @Column()
+  duration: number;
+
+  @Column()
+  pollsterNumber: number;
+
+
 }
 
 // Window commit
