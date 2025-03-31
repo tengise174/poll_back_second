@@ -49,7 +49,7 @@ export class Question {
   })
   rateType: RateType;
 
-  @Column({nullable: true})
+  @Column({ nullable: true })
   @IsNumber()
   rateNumber: number;
 
