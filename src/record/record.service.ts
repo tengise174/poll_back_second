@@ -4,7 +4,7 @@ import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CreateRecordDto } from './dto/create-record.dto';
 import { User } from 'src/auth/user.entity';
-import { Answer } from 'src/answers/answer.entity';
+import { Option } from 'src/option/options.entity';
 import { Question } from 'src/questions/question.entity';
 
 @Injectable()
@@ -12,8 +12,8 @@ export class RecordService {
   constructor(
     @InjectRepository(Record)
     private recordRepository: Repository<Record>,
-    @InjectRepository(Answer)
-    private answerRepository: Repository<Answer>,
+    @InjectRepository(Option)
+    private optionRepository: Repository<Option>,
     @InjectRepository(Question)
     private questionRepository: Repository<Question>,
   ) {}
@@ -25,19 +25,19 @@ export class RecordService {
           where: { id: dto.questionId },
         });
 
-        const answer = await this.answerRepository.findOne({
-          where: { id: dto.answerId },
+        const option = await this.optionRepository.findOne({
+          where: { id: dto.recordId },
         });
 
-        if (!answer && !question) {
+        if (!option && !question) {
           throw new Error(
-            `Question with id ${dto.questionId} or answer with id ${dto.answerId} not found`,
+            `Question with id ${dto.questionId} or option with id ${dto.recordId} not found`,
           );
         }
 
         const record = this.recordRepository.create({
           pollster: user,
-          answer: answer,
+          option: option,
           question: question,
         });
         return record;

@@ -18,7 +18,23 @@ export class PollsService {
     const poll = this.pollRepository.create({
       title: createPollDto.title,
       owner: user,
-    });
+      greetingMessage: createPollDto.greetingMessage,
+      btnLabel: createPollDto.btnLabel,
+      endTitle: createPollDto.endTitle,
+      thankYouMessage: createPollDto.thankYouMessage,
+      isAccessLevel: createPollDto.isAccessLevel,
+      isTimeSelected: createPollDto.isTimeSelected,
+      isDuration: createPollDto.isDuration,
+      isPollsterNumber: createPollDto.isPollsterNumber,
+      themeId: createPollDto.themeId,
+      duration: createPollDto.duration,
+      pollsterNumber: createPollDto.pollsterNumber,
+      startDate: createPollDto.startDate
+        ? new Date(createPollDto.startDate)
+        : null,
+      endDate: createPollDto.endDate ? new Date(createPollDto.endDate) : null,
+    } as unknown as Partial<Poll>);
+
     const savedPoll = await this.pollRepository.save(poll);
     createPollDto.questions.map((dto) =>
       this.questionService.createQuestion(savedPoll, dto),
@@ -36,7 +52,7 @@ export class PollsService {
   async getPollById(pollId: string, user: User) {
     const poll = await this.pollRepository.findOne({
       where: { id: pollId },
-      relations: ['questions', 'questions.answers'],
+      relations: ['questions', 'questions.options'],
     });
 
     if (!poll && poll.owner.id !== user.id) {

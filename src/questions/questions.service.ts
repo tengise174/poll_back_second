@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
 import { Question } from './question.entity';
-import { AnswersService } from 'src/answers/answers.service';
+import { OptionsService } from 'src/option/options.service';
 import { CreateQuestionDto } from './dto/create-question.dto';
 import { Poll } from 'src/polls/poll.entity';
 import { DeleteQuestionsDto } from './dto/delete-questions.dto';
@@ -12,7 +12,7 @@ export class QuestionsService {
   constructor(
     @InjectRepository(Question)
     private questionRepository: Repository<Question>,
-    private answerService: AnswersService,
+    private optionService: OptionsService,
   ) {}
 
   async createQuestion(
@@ -22,8 +22,8 @@ export class QuestionsService {
     const question = this.questionRepository.create(createQuestionDto);
     question.poll = poll;
     const savedQuestion = await this.questionRepository.save(question);
-    question.answers.map((dto) =>
-      this.answerService.createAnswer(dto, savedQuestion),
+    question.options.map((dto) =>
+      this.optionService.createOption(dto, savedQuestion),
     );
     return savedQuestion;
   }
@@ -38,7 +38,7 @@ export class QuestionsService {
   async getQuestions(poll: Poll): Promise<Question[]> {
     return this.questionRepository.find({
       where: { poll: poll },
-      relations: ['answers'],
+      relations: ['options'],
     });
   }
 

@@ -4,7 +4,7 @@ import { AuthModule } from './auth/auth.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { configValidationSchema } from './config.schema';
 import { QuestionsModule } from './questions/questions.module';
-import { AnswersModule } from './answers/answers.module';
+import { OptionsModule } from './option/options.module';
 import { PollsModule } from './polls/polls.module';
 import { RecordModule } from './record/record.module';
 
@@ -30,7 +30,7 @@ import { RecordModule } from './record/record.module';
     }),
     AuthModule,
     QuestionsModule,
-    AnswersModule,
+    OptionsModule,
     PollsModule,
     RecordModule,
   ],

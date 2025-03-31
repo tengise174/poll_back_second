@@ -2,16 +2,16 @@ import { forwardRef, Module } from '@nestjs/common';
 import { QuestionsController } from './questions.controller';
 import { QuestionsService } from './questions.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { Answer } from 'src/answers/answer.entity';
+import { Option } from 'src/option/options.entity';
 import { Question } from './question.entity';
-import { AnswersModule } from 'src/answers/answers.module';
+import { OptionsModule } from 'src/option/options.module';
 import { AuthModule } from 'src/auth/auth.module';
 import { Poll } from 'src/polls/poll.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Question, Answer, Poll]),
-    forwardRef(() => AnswersModule),
+    TypeOrmModule.forFeature([Question, Option, Poll]),
+    forwardRef(() => OptionsModule),
     AuthModule,
   ],
   controllers: [QuestionsController],

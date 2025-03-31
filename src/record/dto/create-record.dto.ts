@@ -5,5 +5,5 @@ export class CreateRecordDto {
   questionId: string;
 
   @IsString()
-  answerId: string;
+  recordId: string;
 }

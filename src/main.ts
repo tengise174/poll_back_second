@@ -14,7 +14,7 @@ async function bootstrap() {
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     allowedHeaders: 'Content-Type,Authorization',
   });
-  const port = 30001;
+  const port = 5000;
   await app.listen(port);
   logger.log(`Application Listening on ${port}`);
 }

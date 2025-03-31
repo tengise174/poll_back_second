@@ -18,17 +18,20 @@ export class Poll {
   @Column()
   title: string;
 
-  @Column()
+  @Column({ nullable: true })
   greetingMessage: string;
 
-  @Column()
+  @Column({ nullable: true })
   btnLabel: string;
 
-  @Column()
+  @Column({ nullable: true })
   endTitle: string;
 
-  @Column()
+  @Column({ nullable: true })
   thankYouMessage: string;
+
+  @Column({ nullable: true })
+  themeId: number;
 
   @ManyToOne(() => User, (user) => user.ownedPolls, { eager: false })
   @Exclude({ toPlainOnly: true })
@@ -42,19 +45,29 @@ export class Poll {
   @OneToMany(() => Question, (question) => question.poll)
   questions: Question[];
 
-  @Column()
+  @Column({ nullable: true })
+  isAccessLevel: boolean;
+
+  @Column({ nullable: true })
+  isTimeSelected: boolean;
+
+  @Column({ nullable: true })
+  isDuration: boolean;
+
+  @Column({ nullable: true })
+  isPollsterNumber: boolean;
+
+  @Column({ type: 'timestamp', nullable: true })
   startDate: Date;
 
-  @Column()
+  @Column({ type: 'timestamp', nullable: true })
   endDate: Date;
 
-  @Column()
+  @Column({ nullable: true })
   duration: number;
 
-  @Column()
+  @Column({ nullable: true })
   pollsterNumber: number;
-
-
 }
 
 // Window commit

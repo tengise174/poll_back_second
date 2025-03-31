@@ -1,5 +1,5 @@
 import { Exclude } from 'class-transformer';
-import { Answer } from 'src/answers/answer.entity';
+import { Option } from 'src/option/options.entity';
 import { User } from 'src/auth/user.entity';
 import { Question } from 'src/questions/question.entity';
 import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
@@ -17,9 +17,9 @@ export class Record {
   @Exclude({ toPlainOnly: true })
   question: Question;
 
-  @ManyToOne(() => Answer, (answer) => answer.id, { eager: false })
+  @ManyToOne(() => Option, (option) => option.id, { eager: false })
   @Exclude({ toPlainOnly: true })
-  answer: Answer;
+  option: Option;
 
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   createdAt: Date;
