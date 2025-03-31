@@ -7,9 +7,6 @@ export class Option {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ nullable: true })
-  order: number;
-
   @Column()
   content: string;
 
