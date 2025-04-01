@@ -54,4 +54,6 @@ export class CreateQuestionDto {
   @ValidateNested({ each: true })
   @Type(() => CreateOptionDto)
   options: CreateOptionDto[];
+
+  ///// dude
 }
