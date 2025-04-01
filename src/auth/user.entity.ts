@@ -9,6 +9,7 @@ import {
 import { Poll } from 'src/polls/poll.entity';
 import { Exclude } from 'class-transformer';
 import { IsOptional } from 'class-validator';
+import { Answer } from 'src/answer/answer.entity';
 
 export enum UserType {
   PERSON = 'PERSON',
@@ -37,6 +38,9 @@ export class User {
     cascade: ['insert', 'update'],
   })
   polls: Poll[];
+
+  @OneToMany(() => Answer, (answer) => answer.user, { nullable: true }) 
+  answers: Answer[];
 
   @Column()
   @IsOptional()

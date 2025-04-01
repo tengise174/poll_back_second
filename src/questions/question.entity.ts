@@ -1,4 +1,5 @@
 import { IsNumber } from 'class-validator';
+import { Answer } from 'src/answer/answer.entity';
 import { Option } from 'src/option/options.entity';
 import { Poll } from 'src/polls/poll.entity';
 import {
@@ -62,4 +63,7 @@ export class Question {
 
   @ManyToOne(() => Poll, (poll) => poll.questions)
   poll: Poll;
+
+  @OneToMany(() => Answer, (answer) => answer.question)
+  answers: Answer[];
 }

@@ -6,7 +6,7 @@ import { configValidationSchema } from './config.schema';
 import { QuestionsModule } from './questions/questions.module';
 import { OptionsModule } from './option/options.module';
 import { PollsModule } from './polls/polls.module';
-import { RecordModule } from './record/record.module';
+import { AnswerModule } from './answer/answer.module';
 
 @Module({
   imports: [
@@ -32,7 +32,7 @@ import { RecordModule } from './record/record.module';
     QuestionsModule,
     OptionsModule,
     PollsModule,
-    RecordModule,
+    AnswerModule,
   ],
 })
 export class AppModule {}
