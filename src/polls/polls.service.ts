@@ -6,12 +6,18 @@ import { QuestionsService } from 'src/questions/questions.service';
 import { CreatePollDto } from './dto/create-poll.dto';
 import { User } from 'src/auth/user.entity';
 import { UpdatePollDto } from './dto/update-poll.dto';
+import { Question } from 'src/questions/question.entity';
+import { Answer } from 'src/answers/answers.entity';
 
 @Injectable()
 export class PollsService {
   constructor(
     @InjectRepository(Poll)
     private pollRepository: Repository<Poll>,
+    @InjectRepository(Question)
+    private questionRepository: Repository<Question>,
+    @InjectRepository(Answer)
+    private answerRepository: Repository<Answer>,
     @InjectRepository(User)
     private userRepository: Repository<User>,
     private questionService: QuestionsService,
@@ -101,8 +107,6 @@ export class PollsService {
     return await this.getPollById(pollId, user);
   }
 
-
-
   async getAllPoll(user: User) {
     return this.pollRepository.find({
       where: { owner: { id: user.id } },
@@ -137,31 +141,108 @@ export class PollsService {
     return poll;
   }
 
-
   async deletePoll(pollId: string, user: User): Promise<void> {
     // First, get the poll to verify it exists and belongs to the user
     const poll = await this.pollRepository.findOne({
-      where: { 
+      where: {
         id: pollId,
-        owner: { id: user.id }
+        owner: { id: user.id },
       },
     });
-  
+
     if (!poll) {
-      throw new NotFoundException('Poll not found or you do not have permission to delete it');
+      throw new NotFoundException(
+        'Poll not found or you do not have permission to delete it',
+      );
     }
-  
+
     // Delete associated questions first (if needed)
     await this.questionService.deleteQuestionsByPoll(poll);
-  
+
     // Delete the poll
     const result = await this.pollRepository.delete({
       id: pollId,
-      owner: { id: user.id }
+      owner: { id: user.id },
     });
-  
+
     if (result.affected === 0) {
       throw new NotFoundException('Failed to delete poll');
     }
   }
+
+
+
+  async getPollStats(pollId: string): Promise<any> {
+    // Fetch the poll with its questions
+    const poll = await this.pollRepository.findOne({
+      where: { id: pollId },
+      relations: ['questions'],
+    });
+
+    if (!poll) {
+      throw new NotFoundException(`Poll with ID ${pollId} not found`);
+    }
+
+    // Fetch all questions with their options, answers, and related users
+    const questions = await this.questionRepository.find({
+      where: { poll: { id: pollId } },
+      relations: ['options', 'answers', 'answers.user', 'answers.selectedOptions'],
+    });
+
+    // Build the statistics
+    const stats = {
+      pollId: poll.id,
+      title: poll.title,
+      questions: questions.map((question) => {
+        const baseQuestionStats = {
+          questionId: question.id,
+          content: question.content,
+          questionType: question.questionType,
+        };
+
+        if (question.questionType === 'TEXT') {
+          // For TEXT questions, return text answers with user info
+          return {
+            ...baseQuestionStats,
+            answers: question.answers.map((answer) => ({
+              textAnswer: answer.textAnswer,
+              answeredBy: answer.user.username,
+              createdAt: answer.createdAt,
+            })),
+          };
+        } else {
+          // For MULTI_CHOICE, SINGLE_CHOICE, RATING, YES_NO (all option-based)
+          const optionStats = question.options.map((option) => {
+            const selectionCount = question.answers.reduce((count, answer) => {
+              const isSelected = answer.selectedOptions.some(
+                (selectedOption) => selectedOption.id === option.id,
+              );
+              return count + (isSelected ? 1 : 0);
+            }, 0);
+
+            return {
+              optionId: option.id,
+              content: option.content,
+              selectionCount,
+              answeredBy: question.answers
+                .filter((answer) =>
+                  answer.selectedOptions.some(
+                    (selectedOption) => selectedOption.id === option.id,
+                  ),
+                )
+                .map((answer) => answer.user.username),
+            };
+          });
+
+          return {
+            ...baseQuestionStats,
+            options: optionStats,
+          };
+        }
+      }),
+    };
+
+    return stats;
+  }
+
 }

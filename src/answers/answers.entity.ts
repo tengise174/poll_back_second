@@ -4,6 +4,7 @@ import { Option } from 'src/options/options.entity';
 import {
   Column,
   Entity,
+  JoinTable,
   ManyToMany,
   ManyToOne,
   PrimaryGeneratedColumn,
@@ -19,8 +20,19 @@ export class Answer {
 
   @ManyToOne(() => Question, (question) => question.answers, { eager: false })
   question: Question;
-
-  @ManyToMany(() => Option, { nullable: true })
+  // In Answer entity
+  @ManyToMany(() => Option, (option) => option.answers, { nullable: true })
+  @JoinTable({
+    name: 'answer_options',
+    joinColumn: {
+      name: 'answerId',
+      referencedColumnName: 'id',
+    },
+    inverseJoinColumn: {
+      name: 'optionId',
+      referencedColumnName: 'id',
+    },
+  })
   selectedOptions: Option[];
 
   @Column({ nullable: true })

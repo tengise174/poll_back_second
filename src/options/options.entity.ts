@@ -1,7 +1,14 @@
 import { Exclude } from 'class-transformer';
 import { IsNumber } from 'class-validator';
+import { Answer } from 'src/answers/answers.entity';
 import { Question } from 'src/questions/question.entity';
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  ManyToMany,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 
 @Entity()
 export class Option {
@@ -20,4 +27,9 @@ export class Option {
   })
   @Exclude({ toPlainOnly: true })
   question: Question;
+
+  @ManyToMany(() => Answer, (answer) => answer.selectedOptions, {
+    eager: false,
+  })
+  answers: Answer[];
 }

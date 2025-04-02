@@ -36,6 +36,11 @@ export class PollsController {
     return this.pollService.getAllPollBasic(user);
   }
 
+  @Get('/stats/:id')
+  getPollStatsById(@Param('id') pollId: string) {
+    return this.pollService.getPollStats(pollId);
+  }
+
   @Get(':id')
   getPollById(@Param('id') pollId: string, @GetUser() user: User) {
     return this.pollService.getPollById(pollId, user);
