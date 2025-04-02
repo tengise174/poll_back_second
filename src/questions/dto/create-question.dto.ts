@@ -7,7 +7,7 @@ import {
   IsOptional,
   ValidateNested,
 } from 'class-validator';
-import { CreateOptionDto } from 'src/option/dto/create-option.dto';
+import { CreateOptionDto } from 'src/options/dto/create-option.dto';
 
 enum QuestionType {
   MULTI_CHOICE = 'MULTI_CHOICE',

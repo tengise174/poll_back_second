@@ -4,8 +4,9 @@ import { AuthModule } from './auth/auth.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { configValidationSchema } from './config.schema';
 import { QuestionsModule } from './questions/questions.module';
-import { OptionsModule } from './option/options.module';
+import { OptionsModule } from './options/options.module';
 import { PollsModule } from './polls/polls.module';
+import { AnswersModule } from './answers/answers.module';
 
 @Module({
   imports: [
@@ -31,6 +32,7 @@ import { PollsModule } from './polls/polls.module';
     QuestionsModule,
     OptionsModule,
     PollsModule,
+    AnswersModule,
   ],
 })
 export class AppModule {}

@@ -9,6 +9,7 @@ import {
 import { Poll } from 'src/polls/poll.entity';
 import { Exclude } from 'class-transformer';
 import { IsOptional } from 'class-validator';
+import { Answer } from 'src/answers/answers.entity';
 
 export enum UserType {
   PERSON = 'PERSON',
@@ -62,4 +63,7 @@ export class User {
 
   @ManyToOne(() => User, (user) => user.employees, { nullable: true })
   employer?: User;
+
+  @OneToMany(() => Answer, (answer) => answer.user)
+  answers: Answer[];
 }

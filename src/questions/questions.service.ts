@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
 import { Question } from './question.entity';
-import { OptionsService } from 'src/option/options.service';
+import { OptionsService } from 'src/options/options.service';
 import { CreateQuestionDto } from './dto/create-question.dto';
 import { Poll } from 'src/polls/poll.entity';
 import { DeleteQuestionsDto } from './dto/delete-questions.dto';
