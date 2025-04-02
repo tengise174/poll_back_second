@@ -108,6 +108,20 @@ export class PollsService {
     });
   }
 
+  async getAllPollBasic(user: User) {
+    return this.pollRepository.find({
+      where: { owner: { id: user.id } },
+      select: [
+        'id',
+        'title',
+        'owner',
+        'greetingMessage',
+        'startDate',
+        'endDate',
+      ],
+    });
+  }
+
   async getPollById(pollId: string, user: User) {
     const poll = await this.pollRepository.findOne({
       where: { id: pollId },

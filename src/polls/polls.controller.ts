@@ -1,4 +1,12 @@
-import { Body, Controller, Get, Param, Post, Put, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Post,
+  Put,
+  UseGuards,
+} from '@nestjs/common';
 import { PollsService } from './polls.service';
 import { AuthGuard } from '@nestjs/passport';
 import { User } from 'src/auth/user.entity';
@@ -20,6 +28,11 @@ export class PollsController {
   @Get()
   getAllPoll(@GetUser() user: User) {
     return this.pollService.getAllPoll(user);
+  }
+
+  @Get('/all')
+  getAllPollBasic(@GetUser() user: User) {
+    return this.pollService.getAllPollBasic(user);
   }
 
   @Get(':id')
