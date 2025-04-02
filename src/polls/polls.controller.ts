@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   Post,
@@ -55,5 +56,10 @@ export class PollsController {
     @Body() updatePollDto: CreatePollDto,
   ) {
     return this.pollService.updatePoll(pollId, user, updatePollDto);
+  }
+
+  @Delete(':id')
+  deletePoll(@Param('id') pollId: string, @GetUser() user: User) {
+    return this.pollService.deletePoll(pollId, user);
   }
 }

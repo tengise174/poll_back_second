@@ -6,7 +6,6 @@ import { configValidationSchema } from './config.schema';
 import { QuestionsModule } from './questions/questions.module';
 import { OptionsModule } from './option/options.module';
 import { PollsModule } from './polls/polls.module';
-import { AnswerModule } from './answer/answer.module';
 
 @Module({
   imports: [
@@ -32,7 +31,6 @@ import { AnswerModule } from './answer/answer.module';
     QuestionsModule,
     OptionsModule,
     PollsModule,
-    AnswerModule,
   ],
 })
 export class AppModule {}

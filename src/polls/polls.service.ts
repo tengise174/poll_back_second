@@ -101,6 +101,8 @@ export class PollsService {
     return await this.getPollById(pollId, user);
   }
 
+
+
   async getAllPoll(user: User) {
     return this.pollRepository.find({
       where: { owner: { id: user.id } },
@@ -133,5 +135,33 @@ export class PollsService {
     }
 
     return poll;
+  }
+
+
+  async deletePoll(pollId: string, user: User): Promise<void> {
+    // First, get the poll to verify it exists and belongs to the user
+    const poll = await this.pollRepository.findOne({
+      where: { 
+        id: pollId,
+        owner: { id: user.id }
+      },
+    });
+  
+    if (!poll) {
+      throw new NotFoundException('Poll not found or you do not have permission to delete it');
+    }
+  
+    // Delete associated questions first (if needed)
+    await this.questionService.deleteQuestionsByPoll(poll);
+  
+    // Delete the poll
+    const result = await this.pollRepository.delete({
+      id: pollId,
+      owner: { id: user.id }
+    });
+  
+    if (result.affected === 0) {
+      throw new NotFoundException('Failed to delete poll');
+    }
   }
 }

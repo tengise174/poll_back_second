@@ -1,5 +1,4 @@
 import { Exclude, Transform } from 'class-transformer';
-import { Answer } from 'src/answer/answer.entity';
 import { User } from 'src/auth/user.entity';
 import { Question } from 'src/questions/question.entity';
 import {
@@ -50,9 +49,6 @@ export class Poll {
 
   @OneToMany(() => Question, (question) => question.poll)
   questions: Question[];
-
-  @OneToMany(() => Answer, (answer) => answer.poll)
-  answers: Answer[];
 
   @Column({ nullable: true })
   isAccessLevel: boolean;
