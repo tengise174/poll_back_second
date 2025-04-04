@@ -6,12 +6,15 @@ import { OptionsService } from 'src/options/options.service';
 import { CreateQuestionDto } from './dto/create-question.dto';
 import { Poll } from 'src/polls/poll.entity';
 import { DeleteQuestionsDto } from './dto/delete-questions.dto';
+import { Answer } from 'src/answers/answers.entity';
 
 @Injectable()
 export class QuestionsService {
   constructor(
     @InjectRepository(Question)
     private questionRepository: Repository<Question>,
+    @InjectRepository(Answer)
+    private answerRepository: Repository<Answer>,
     private optionService: OptionsService,
   ) {}
 
@@ -54,7 +57,19 @@ export class QuestionsService {
     this.questionRepository.remove(questions);
   }
 
-  async deleteQuestionsByPoll(poll: Poll) {
+  // In your QuestionService or wherever deleteQuestionsByPoll is defined
+  async deleteQuestionsByPoll(poll: Poll): Promise<void> {
+    const questions = await this.questionRepository.find({
+      where: { poll: { id: poll.id } },
+      relations: ['answers'], // Load answers if not eager
+    });
+
+    for (const question of questions) {
+      // Delete all answers associated with this question
+      await this.answerRepository.delete({ question: { id: question.id } });
+    }
+
+    // Now delete the questions
     await this.questionRepository.delete({ poll: { id: poll.id } });
   }
 }

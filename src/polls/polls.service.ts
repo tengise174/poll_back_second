@@ -141,36 +141,80 @@ export class PollsService {
     return poll;
   }
 
+  async getPollForTest(pollId: string, user: User) {
+    const poll = await this.pollRepository.findOne({
+      where: { id: pollId },
+      relations: [
+        'questions',
+        'questions.options',
+        'pollsters',
+        'questions.answers',
+        'questions.answers.user', // Include the user who answered
+      ],
+    });
+
+    if (!poll) {
+      return {
+        message: 'Poll not found',
+      };
+    }
+
+    const currentDate = new Date();
+
+    if (poll.startDate && currentDate < poll.startDate) {
+      return {
+        message: 'Poll has not started yet',
+        startDate: poll.startDate,
+      };
+    }
+
+    if (poll.endDate && currentDate > poll.endDate) {
+      return {
+        message: 'Poll has already ended',
+        endDate: poll.endDate,
+      };
+    }
+
+    const userHasAnswered = poll.questions.some((question) =>
+      question.answers.some((answer) => answer.user.id === user.id),
+    );
+
+    if (userHasAnswered) {
+      return {
+        message: 'User has already answered',
+      };
+    }
+
+    return poll;
+  }
+
   async deletePoll(pollId: string, user: User): Promise<void> {
-    // First, get the poll to verify it exists and belongs to the user
     const poll = await this.pollRepository.findOne({
       where: {
         id: pollId,
         owner: { id: user.id },
       },
     });
-
+  
     if (!poll) {
       throw new NotFoundException(
         'Poll not found or you do not have permission to delete it',
       );
     }
-
-    // Delete associated questions first (if needed)
+  
+    // Delete questions (and their answers) first
     await this.questionService.deleteQuestionsByPoll(poll);
-
+  
     // Delete the poll
     const result = await this.pollRepository.delete({
       id: pollId,
       owner: { id: user.id },
     });
-
+  
     if (result.affected === 0) {
       throw new NotFoundException('Failed to delete poll');
     }
   }
-
-
 
   async getPollStats(pollId: string): Promise<any> {
     // Fetch the poll with its questions
@@ -186,7 +230,12 @@ export class PollsService {
     // Fetch all questions with their options, answers, and related users
     const questions = await this.questionRepository.find({
       where: { poll: { id: pollId } },
-      relations: ['options', 'answers', 'answers.user', 'answers.selectedOptions'],
+      relations: [
+        'options',
+        'answers',
+        'answers.user',
+        'answers.selectedOptions',
+      ],
     });
 
     // Build the statistics
@@ -244,5 +293,4 @@ export class PollsService {
 
     return stats;
   }
-
 }
