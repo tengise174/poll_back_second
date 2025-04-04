@@ -159,6 +159,15 @@ export class PollsService {
       };
     }
 
+    if(poll.isAccessLevel) {
+      const isPollster = poll.pollsters.some((pollster) => pollster.id === user.id);
+      if(!isPollster) {
+        return {
+          message: 'Dont have access',
+        };
+      }
+    }
+
     const currentDate = new Date();
 
     if (poll.startDate && currentDate < poll.startDate) {
