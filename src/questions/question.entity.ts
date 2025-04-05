@@ -10,7 +10,7 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 
-enum QuestionType {
+export enum QuestionType {
   MULTI_CHOICE = 'MULTI_CHOICE',
   SINGLE_CHOICE = 'SINGLE_CHOICE',
   RATING = 'RATING',

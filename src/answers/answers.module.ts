@@ -6,9 +6,10 @@ import { Answer } from './answers.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Option } from 'src/options/options.entity';
 import { AuthModule } from 'src/auth/auth.module';
+import { Poll } from 'src/polls/poll.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Answer, Question, Option]), AuthModule],
+  imports: [TypeOrmModule.forFeature([Answer, Question, Option, Poll]), AuthModule],
   controllers: [AnswersController],
   providers: [AnswersService],
 })

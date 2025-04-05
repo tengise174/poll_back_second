@@ -6,6 +6,21 @@ import { In, Repository } from 'typeorm';
 import { Option } from 'src/options/options.entity';
 import { CreateAnswerDto } from './dto/create-answer.dto';
 import { User } from 'src/auth/user.entity';
+import { Poll } from 'src/polls/poll.entity';
+import { QuestionType } from 'src/questions/question.entity';
+
+
+export interface PollAnswerDetails {
+  poll: Poll;
+  questions: {
+    questionId: string;
+    content: string;
+    questionType: QuestionType; // Use the imported enum
+    selectedOptions: { id: string; content: string }[];
+    textAnswer: string | null;
+  }[];
+  message?: string;
+}
 
 @Injectable()
 export class AnswersService {
@@ -16,6 +31,8 @@ export class AnswersService {
     private questionRepository: Repository<Question>,
     @InjectRepository(Option)
     private optionRepository: Repository<Option>,
+    @InjectRepository(Poll)
+    private pollRepository: Repository<Poll>,
   ) {}
 
   async saveAnswers(dtos: CreateAnswerDto[], user: User) {
@@ -23,7 +40,6 @@ export class AnswersService {
 
     for (const dto of dtos) {
       if (!dto.questionId || (!dto.optionIds && !dto.textAnswer)) {
-        // Skip invalid answers or log an error
         console.warn('Skipping invalid answer:', dto);
         continue;
       }
@@ -62,4 +78,68 @@ export class AnswersService {
     // Save answers
     return this.answerRepository.save(answers);
   }
+
+  async getUserAnsweredPolls(user: User) {
+    const answers = await this.answerRepository.find({
+      where: { user: { id: user.id } },
+      relations: ['question', 'question.poll'],
+      select: ['id', 'createdAt'],
+    });
+
+    const pollsMap = new Map<string, Poll>();
+
+    answers.forEach((answer) => {
+      const poll = answer.question.poll;
+      if (poll && !pollsMap.has(poll.id)) {
+        pollsMap.set(poll.id, {
+          id: poll.id,
+          title: poll.title,
+          greetingMessage: poll.greetingMessage,
+          startDate: poll.startDate,
+          endDate: poll.endDate,
+        } as Poll);
+      }
+    });
+
+    return Array.from(pollsMap.values());
+  }
+
+  async getPollAnswerDetails(pollId: string, user: User): Promise<PollAnswerDetails> {
+    const poll = await this.pollRepository.findOne({
+      where: { id: pollId },
+      select: ['id', 'title', 'startDate', 'endDate', 'themeId'],
+    });
+    if (!poll) throw new Error(`Poll ${pollId} not found`);
+
+    const answers = await this.answerRepository.find({
+      where: {
+        user: { id: user.id },
+        question: { poll: { id: pollId } },
+      },
+      relations: ['question', 'selectedOptions'],
+      select: ['id', 'textAnswer', 'createdAt'],
+    });
+
+    if (answers.length === 0) {
+      return {
+        poll,
+        questions: [],
+        message: 'No answers found for this poll',
+      };
+    }
+
+    const questionDetails = answers.map((answer) => ({
+      questionId: answer.question.id,
+      content: answer.question.content,
+      questionType: answer.question.questionType, 
+      selectedOptions: answer.selectedOptions?.map((option) => ({
+        id: option.id,
+        content: option.content,
+      })) || [],
+      textAnswer: answer.textAnswer || null,
+    }));
+
+    return { poll, questions: questionDetails };
+  }
+  
 }
