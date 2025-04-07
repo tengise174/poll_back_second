@@ -107,10 +107,11 @@ export class AnswersService {
   async getPollAnswerDetails(pollId: string, user: User): Promise<PollAnswerDetails> {
     const poll = await this.pollRepository.findOne({
       where: { id: pollId },
-      select: ['id', 'title', 'startDate', 'endDate', 'themeId'],
+      select: ['id', 'title', 'greetingMessage', 'startDate', 'endDate', 'themeId'],
     });
     if (!poll) throw new Error(`Poll ${pollId} not found`);
-
+  
+    // Fetch answers with their related question and selected options
     const answers = await this.answerRepository.find({
       where: {
         user: { id: user.id },
@@ -119,7 +120,7 @@ export class AnswersService {
       relations: ['question', 'selectedOptions'],
       select: ['id', 'textAnswer', 'createdAt'],
     });
-
+  
     if (answers.length === 0) {
       return {
         poll,
@@ -127,18 +128,36 @@ export class AnswersService {
         message: 'No answers found for this poll',
       };
     }
-
-    const questionDetails = answers.map((answer) => ({
-      questionId: answer.question.id,
-      content: answer.question.content,
-      questionType: answer.question.questionType, 
-      selectedOptions: answer.selectedOptions?.map((option) => ({
-        id: option.id,
-        content: option.content,
-      })) || [],
-      textAnswer: answer.textAnswer || null,
-    }));
-
+  
+    // Fetch all questions for the poll with their options
+    const questions = await this.questionRepository.find({
+      where: { poll: { id: pollId } },
+      relations: ['options'],
+      select: ['id', 'content', 'questionType', 'rateNumber', 'rateType'],
+    });
+  
+    // Map the questions and merge with user's answers
+    const questionDetails = questions.map((question) => {
+      const userAnswer = answers.find((answer) => answer.question.id === question.id);
+  
+      return {
+        questionId: question.id,
+        content: question.content,
+        questionType: question.questionType,
+        rateNumber: question.rateNumber,
+        rateType: question.rateType,
+        allOptions: question.options?.map((option) => ({
+          id: option.id,
+          content: option.content,
+        })) || [],
+        selectedOptions: userAnswer?.selectedOptions?.map((option) => ({
+          id: option.id,
+          content: option.content,
+        })) || [],
+        textAnswer: userAnswer?.textAnswer || null,
+      };
+    });
+  
     return { poll, questions: questionDetails };
   }
   
