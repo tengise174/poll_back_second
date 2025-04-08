@@ -289,7 +289,6 @@ export class PollsService {
         'questions.answers',
         'questions.answers.user',
         'failedAttendees',
-        'createdAt',
       ],
     });
 
