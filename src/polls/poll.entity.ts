@@ -73,4 +73,18 @@ export class Poll {
 
   @Column({ nullable: true })
   pollsterNumber: number;
+
+  @ManyToMany(() => User, { cascade: ['insert', 'update'] })
+  @JoinTable({
+    name: 'poll_attendees_failed',
+    joinColumn: { name: 'pollId', referencedColumnName: 'id' },
+    inverseJoinColumn: { name: 'userId', referencedColumnName: 'id' },
+  })
+  @Transform(({ value }) =>
+    value.map((user: User) => ({ username: user.username })),
+  )
+  failedAttendees: User[];
+
+  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  createdAt: Date;
 }

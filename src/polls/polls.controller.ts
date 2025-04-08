@@ -59,6 +59,14 @@ export class PollsController {
     return this.pollService.createPoll(user, createPollDto);
   }
 
+  @Post('failed-attendance/:id')
+  async recordFailedAttendance(
+    @Param('id') pollId: string,
+    @GetUser() user: User,
+  ) {
+    await this.pollService.recordFailedAttendance(pollId, user);
+  }
+
   @Put(':id')
   updatePoll(
     @Param('id') pollId: string,

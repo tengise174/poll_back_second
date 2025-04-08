@@ -51,6 +51,7 @@ export class PollsService {
         : null,
       endDate: createPollDto.endDate ? new Date(createPollDto.endDate) : null,
       pollsters: pollsters.filter(Boolean),
+      createdAt: new Date(),
     } as unknown as Partial<Poll>);
 
     const savedPoll = await this.pollRepository.save(poll);
@@ -124,6 +125,7 @@ export class PollsService {
         'greetingMessage',
         'startDate',
         'endDate',
+        'createdAt',
       ],
     });
   }
@@ -149,7 +151,8 @@ export class PollsService {
         'questions.options',
         'pollsters',
         'questions.answers',
-        'questions.answers.user', // Include the user who answered
+        'questions.answers.user',
+        'failedAttendees',
       ],
     });
 
@@ -159,11 +162,13 @@ export class PollsService {
       };
     }
 
-    if(poll.isAccessLevel) {
-      const isPollster = poll.pollsters.some((pollster) => pollster.id === user.id);
-      if(!isPollster) {
+    if (poll.isAccessLevel) {
+      const isPollster = poll.pollsters.some(
+        (pollster) => pollster.id === user.id,
+      );
+      if (!isPollster) {
         return {
-          message: 'Dont have access',
+          message: "Don't have access",
         };
       }
     }
@@ -184,8 +189,14 @@ export class PollsService {
       };
     }
 
+    // Check if user has already submitted answers
     const userHasAnswered = poll.questions.some((question) =>
       question.answers.some((answer) => answer.user.id === user.id),
+    );
+
+    // Check if user has already attended but failed to submit
+    const userFailedToSubmit = poll.failedAttendees.some(
+      (attendee) => attendee.id === user.id,
     );
 
     if (userHasAnswered) {
@@ -194,7 +205,51 @@ export class PollsService {
       };
     }
 
+    if (userFailedToSubmit) {
+      return {
+        message: 'User has already attended',
+      };
+    }
+
     return poll;
+  }
+
+  async recordFailedAttendance(pollId: string, user: User): Promise<void> {
+    const poll = await this.pollRepository.findOne({
+      where: { id: pollId },
+      relations: [
+        'failedAttendees',
+        'questions',
+        'questions.answers',
+        'questions.answers.user',
+      ],
+    });
+
+    if (!poll) {
+      throw new NotFoundException(`Poll ${pollId} not found`);
+    }
+
+    const userHasAnswered = poll.questions.some((question) =>
+      question.answers.some((answer) => answer.user.id === user.id),
+    );
+
+    const userAlreadyFailed = poll.failedAttendees.some(
+      (attendee) => attendee.id === user.id,
+    );
+
+    if (userHasAnswered || userAlreadyFailed) {
+      return;
+    }
+
+    // Manually insert into the junction table, ignoring duplicates
+    await this.pollRepository.query(
+      `
+      INSERT INTO poll_attendees_failed ("pollId", "userId")
+      VALUES ($1, $2)
+      ON CONFLICT DO NOTHING
+      `,
+      [pollId, user.id],
+    );
   }
 
   async deletePoll(pollId: string, user: User): Promise<void> {
@@ -204,39 +259,44 @@ export class PollsService {
         owner: { id: user.id },
       },
     });
-  
+
     if (!poll) {
       throw new NotFoundException(
         'Poll not found or you do not have permission to delete it',
       );
     }
-  
+
     // Delete questions (and their answers) first
     await this.questionService.deleteQuestionsByPoll(poll);
-  
+
     // Delete the poll
     const result = await this.pollRepository.delete({
       id: pollId,
       owner: { id: user.id },
     });
-  
+
     if (result.affected === 0) {
       throw new NotFoundException('Failed to delete poll');
     }
   }
 
   async getPollStats(pollId: string): Promise<any> {
-    // Fetch the poll with its questions
     const poll = await this.pollRepository.findOne({
       where: { id: pollId },
-      relations: ['questions'],
+      relations: [
+        'questions',
+        'questions.options',
+        'questions.answers',
+        'questions.answers.user',
+        'failedAttendees',
+        'createdAt',
+      ],
     });
 
     if (!poll) {
       throw new NotFoundException(`Poll with ID ${pollId} not found`);
     }
 
-    // Fetch all questions with their options, answers, and related users
     const questions = await this.questionRepository.find({
       where: { poll: { id: pollId } },
       relations: [
@@ -247,10 +307,10 @@ export class PollsService {
       ],
     });
 
-    // Build the statistics
     const stats = {
       pollId: poll.id,
       title: poll.title,
+      createdAt: poll.createdAt,
       questions: questions.map((question) => {
         const baseQuestionStats = {
           questionId: question.id,
@@ -259,7 +319,6 @@ export class PollsService {
         };
 
         if (question.questionType === 'TEXT') {
-          // For TEXT questions, return text answers with user info
           return {
             ...baseQuestionStats,
             answers: question.answers.map((answer) => ({
@@ -269,7 +328,6 @@ export class PollsService {
             })),
           };
         } else {
-          // For MULTI_CHOICE, SINGLE_CHOICE, RATING, YES_NO (all option-based)
           const optionStats = question.options.map((option) => {
             const selectionCount = question.answers.reduce((count, answer) => {
               const isSelected = answer.selectedOptions.some(
@@ -298,6 +356,17 @@ export class PollsService {
           };
         }
       }),
+      submittedUsers: Array.from(
+        new Set(
+          questions
+            .flatMap((q) => q.answers)
+            .map((a) => ({ id: a.user.id, username: a.user.username })),
+        ),
+      ),
+      failedAttendees: poll.failedAttendees.map((user) => ({
+        id: user.id,
+        username: user.username,
+      })),
     };
 
     return stats;

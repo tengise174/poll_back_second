@@ -39,6 +39,9 @@ export class User {
   })
   polls: Poll[];
 
+  @ManyToMany(() => Poll, (poll) => poll.failedAttendees)
+  failedPolls: Poll[];
+
   @Column()
   @IsOptional()
   firstname: string;
