@@ -189,6 +189,26 @@ export class PollsService {
       };
     }
 
+    const submittedUsers = Array.from(
+      new Set(
+        poll.questions
+          .flatMap((question) => question.answers)
+          .map((answer) => answer.user.id),
+      ),
+    );
+
+    const submittedUserCount = submittedUsers.length;
+
+    if (
+      poll.isPollsterNumber &&
+      poll.pollsterNumber !== null &&
+      submittedUserCount >= poll.pollsterNumber
+    ) {
+      return {
+        message: 'Poll is full',
+      };
+    }
+
     // Check if user has already submitted answers
     const userHasAnswered = poll.questions.some((question) =>
       question.answers.some((answer) => answer.user.id === user.id),
@@ -306,10 +326,34 @@ export class PollsService {
       ],
     });
 
+    const submittedUsers = Array.from(
+      new Set(questions.flatMap((q) => q.answers).map((a) => a.user.id)),
+    );
+    const submittedUserCount = submittedUsers.length;
+    const currentDate = new Date();
+    let status: string;
+
+    if (poll.startDate && currentDate < poll.startDate) {
+      status = 'YET_OPEN';
+    } else if (poll.endDate && currentDate > poll.endDate) {
+      status = 'CLOSED';
+    } else if (
+      poll.isPollsterNumber &&
+      poll.pollsterNumber !== null &&
+      submittedUserCount >= poll.pollsterNumber
+    ) {
+      status = 'FULL';
+    } else {
+      status = 'OPEN';
+    }
+
     const stats = {
       pollId: poll.id,
       title: poll.title,
       createdAt: poll.createdAt,
+      status,
+      submittedUserCount,
+      pollsterNumber: poll.pollsterNumber,
       questions: questions.map((question) => {
         const baseQuestionStats = {
           questionId: question.id,

@@ -90,7 +90,14 @@ export class AnswersService {
     // Fetch polls where the user is in failedAttendees
     const failedPolls = await this.pollRepository.find({
       where: { failedAttendees: { id: user.id } },
-      select: ['id', 'title', 'greetingMessage', 'startDate', 'endDate', 'createdAt'],
+      select: [
+        'id',
+        'title',
+        'greetingMessage',
+        'startDate',
+        'endDate',
+        'createdAt',
+      ],
       relations: ['failedAttendees'],
     });
 
@@ -130,11 +137,22 @@ export class AnswersService {
     return Array.from(pollsMap.values());
   }
 
-  async getPollAnswerDetails(pollId: string, user: User): Promise<PollAnswerDetails> {
+  async getPollAnswerDetails(
+    pollId: string,
+    user: User,
+  ): Promise<PollAnswerDetails> {
     // Step 1: Fetch the poll with basic details and failedAttendees
     const poll = await this.pollRepository.findOne({
       where: { id: pollId },
-      select: ['id', 'title', 'greetingMessage', 'startDate', 'endDate', 'themeId', 'createdAt'],
+      select: [
+        'id',
+        'title',
+        'greetingMessage',
+        'startDate',
+        'endDate',
+        'themeId',
+        'createdAt',
+      ],
       relations: ['failedAttendees'],
     });
 
