@@ -40,4 +40,7 @@ export class Answer {
 
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   createdAt: Date;
+
+  @Column({ type: 'float', nullable: true })
+  timeTaken: number;
 }

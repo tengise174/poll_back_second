@@ -347,6 +347,30 @@ export class PollsService {
       status = 'OPEN';
     }
 
+    const userTotalTimes = new Map<
+      string,
+      { id: string; username: string; totalTimeTaken: number }
+    >();
+    questions
+      .flatMap((q) => q.answers)
+      .forEach((answer) => {
+        const userId = answer.user.id;
+        const current = userTotalTimes.get(userId) || {
+          id: userId,
+          username: answer.user.username,
+          totalTimeTaken: 0,
+        };
+        current.totalTimeTaken += answer.timeTaken || 0;
+        userTotalTimes.set(userId, current);
+      });
+
+    const totalPollTime = Array.from(userTotalTimes.values()).reduce(
+      (sum, user) => sum + user.totalTimeTaken,
+      0,
+    );
+    const avgPollTime =
+      submittedUserCount > 0 ? totalPollTime / submittedUserCount : 0;
+
     const stats = {
       pollId: poll.id,
       title: poll.title,
@@ -354,6 +378,7 @@ export class PollsService {
       status,
       submittedUserCount,
       pollsterNumber: poll.pollsterNumber,
+      avgPollTime,
       questions: questions.map((question) => {
         const baseQuestionStats = {
           questionId: question.id,
@@ -361,13 +386,23 @@ export class PollsService {
           questionType: question.questionType,
         };
 
+        const answerCount = question.answers.length;
+        const totalTimeForQuestion = question.answers.reduce(
+          (sum, answer) => sum + (answer.timeTaken || 0),
+          0,
+        );
+        const avgTimeTaken =
+          answerCount > 0 ? totalTimeForQuestion / answerCount : 0;
+
         if (question.questionType === 'TEXT') {
           return {
             ...baseQuestionStats,
+            avgTimeTaken,
             answers: question.answers.map((answer) => ({
               textAnswer: answer.textAnswer,
               answeredBy: answer.user.username,
               createdAt: answer.createdAt,
+              timeTaken: answer.timeTaken,
             })),
           };
         } else {
@@ -389,23 +424,21 @@ export class PollsService {
                     (selectedOption) => selectedOption.id === option.id,
                   ),
                 )
-                .map((answer) => answer.user.username),
+                .map((answer) => ({
+                  username: answer.user.username,
+                  timeTaken: answer.timeTaken,
+                })),
             };
           });
 
           return {
             ...baseQuestionStats,
+            avgTimeTaken,
             options: optionStats,
           };
         }
       }),
-      submittedUsers: Array.from(
-        new Set(
-          questions
-            .flatMap((q) => q.answers)
-            .map((a) => ({ id: a.user.id, username: a.user.username })),
-        ),
-      ),
+      submittedUsers: Array.from(userTotalTimes.values()),
       failedAttendees: poll.failedAttendees.map((user) => ({
         id: user.id,
         username: user.username,

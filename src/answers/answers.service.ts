@@ -73,6 +73,10 @@ export class AnswersService {
         answer.textAnswer = dto.textAnswer;
       }
 
+      if (dto.timeTaken !== undefined) {
+        answer.timeTaken = dto.timeTaken;
+      }
+
       answers.push(answer);
     }
 

@@ -1,4 +1,4 @@
-import { IsArray, IsOptional, IsString } from 'class-validator';
+import { IsArray, IsNumber, IsOptional, IsString } from 'class-validator';
 
 export class CreateAnswerDto {
   @IsString()
@@ -11,4 +11,8 @@ export class CreateAnswerDto {
   @IsString()
   @IsOptional()
   textAnswer?: string;
+
+  @IsNumber()
+  @IsOptional()
+  timeTaken?: number;
 }
