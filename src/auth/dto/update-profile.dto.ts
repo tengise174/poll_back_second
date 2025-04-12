@@ -18,11 +18,6 @@ export class UpdateProfileDto {
     @MinLength(2)
     lastname?: string
 
-    @IsString()
-    @IsOptional()
-    @MinLength(2)
-    companyname?: string
-
     @IsEnum(UserType)
     @IsOptional()
     usertype?: UserType

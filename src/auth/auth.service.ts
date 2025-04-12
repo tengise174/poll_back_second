@@ -171,7 +171,7 @@ export class AuthService {
   }
 
   async updateProfile(user: User, updateProfileDto: UpdateProfileDto) {
-    const { username, firstname, lastname, companyname, usertype } =
+    const { username, firstname, lastname, usertype } =
       updateProfileDto;
 
       if(username !== undefined && username !== user.username) {
@@ -186,7 +186,6 @@ export class AuthService {
 
       if(firstname !== undefined) user.firstname = firstname;
       if(lastname !== undefined) user.lastname = lastname;
-      if(companyname !== undefined) user.companyname = companyname;
       if(usertype !== undefined) user.usertype = usertype;
 
       await this.userRepository.save(user);
