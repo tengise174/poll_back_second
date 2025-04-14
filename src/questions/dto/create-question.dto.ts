@@ -1,6 +1,7 @@
 import { Transform, Type } from 'class-transformer';
 import {
   IsArray,
+  IsBoolean,
   IsEnum,
   IsNotEmpty,
   IsNumber,
@@ -55,5 +56,6 @@ export class CreateQuestionDto {
   @Type(() => CreateOptionDto)
   options: CreateOptionDto[];
 
-  ///// dude
+  @IsBoolean()
+  required: boolean;
 }

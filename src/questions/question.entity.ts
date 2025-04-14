@@ -58,6 +58,9 @@ export class Question {
   @IsNumber()
   order: number;
 
+  @Column()
+  required: boolean;
+
   @OneToMany(() => Option, (option) => option.question)
   options: Option[];
 

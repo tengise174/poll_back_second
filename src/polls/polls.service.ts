@@ -395,6 +395,7 @@ export class PollsService {
           questionId: question.id,
           content: question.content,
           questionType: question.questionType,
+          order: question.order,
         };
 
         const answerCount = question.answers.length;
@@ -428,6 +429,7 @@ export class PollsService {
             return {
               optionId: option.id,
               content: option.content,
+              order: option.order,
               selectionCount,
               answeredBy: question.answers
                 .filter((answer) =>

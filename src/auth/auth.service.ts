@@ -1,10 +1,10 @@
 import {
+  BadRequestException,
   ConflictException,
   ForbiddenException,
   Injectable,
   InternalServerErrorException,
   NotFoundException,
-  UnauthorizedException,
 } from '@nestjs/common';
 import { Repository } from 'typeorm';
 import { User, UserType } from './user.entity';
@@ -68,18 +68,21 @@ export class AuthService {
   ): Promise<{ accessToken: string }> {
     const { username, password } = signInCredentialsDto;
 
+    // Find user by username
     const user = await this.userRepository.findOne({
       where: { username },
       relations: [],
     });
 
-    if (user && (await bcrypt.compare(password, user.password))) {
-      const payload: JwtPayload = { username };
-      const accessToken = await this.jwtService.sign(payload);
-      return { accessToken };
-    } else {
-      throw new UnauthorizedException('Please check your login credentials');
+    // Check if user exists and password is valid
+    if (!user || !(await bcrypt.compare(password, user.password))) {
+      throw new BadRequestException('Invalid credentials');
     }
+
+    // Generate JWT token
+    const payload: JwtPayload = { username };
+    const accessToken = await this.jwtService.sign(payload);
+    return { accessToken };
   }
 
   async createEmployee(
@@ -88,7 +91,6 @@ export class AuthService {
   ) {
     const { username, password, firstname, lastname } = createEmployeeDto;
 
-    // hash then store it
     const salt = await bcrypt.genSalt();
     const hashedPassword = await bcrypt.hash(password, salt);
 
@@ -150,55 +152,115 @@ export class AuthService {
     };
   }
 
-  async changePassword(user: User, changePasswordDto: any) {
+  async changePassword(
+    user: User,
+    changePasswordDto: { currentPassword: string; newPassword: string },
+  ) {
     const { currentPassword, newPassword } = changePasswordDto;
 
-    const isCurrentPasswordValid = await bcrypt.compare(
-      currentPassword,
-      user.password,
-    );
-
-    if (!isCurrentPasswordValid) {
-      throw new UnauthorizedException('Current password is incorrect');
+    // Ensure the user is fetched from the database to avoid stale entity issues
+    const dbUser = await this.userRepository.findOne({
+      where: { id: user.id },
+    });
+    if (!dbUser) {
+      throw new NotFoundException('User not found');
     }
 
+    // Verify current password
+    const isCurrentPasswordValid = await bcrypt.compare(
+      currentPassword,
+      dbUser.password,
+    );
+    if (!isCurrentPasswordValid) {
+      return { message: "Current password doesn't match" };
+    }
+
+    // Hash new password
     const salt = await bcrypt.genSalt();
     const hashedPassword = await bcrypt.hash(newPassword, salt);
 
-    user.password = hashedPassword;
-    await this.userRepository.save(user);
-    return { message: 'Password successfully changed' };
+    // Update password
+    dbUser.password = hashedPassword;
+
+    // Save to database
+    try {
+      await this.userRepository.save(dbUser);
+      return { message: 'Password changed successfully' };
+    } catch (err: any) {
+      throw new InternalServerErrorException('Failed to update password', err);
+    }
   }
 
   async updateProfile(user: User, updateProfileDto: UpdateProfileDto) {
-    const { username, firstname, lastname, usertype } =
-      updateProfileDto;
+    const { username, firstname, lastname, usertype } = updateProfileDto;
 
-      if(username !== undefined && username !== user.username) {
-        const existingUser = await this.userRepository.findOne({
-          where: { username },
-        });
-        if(existingUser) {
-          throw new ConflictException('Username already exist');
-        }
-        user.username = username;
+    if (username !== undefined && username !== user.username) {
+      const existingUser = await this.userRepository.findOne({
+        where: { username },
+      });
+      if (existingUser) {
+        throw new ConflictException('Username already exist');
       }
+      user.username = username;
+    }
 
-      if(firstname !== undefined) user.firstname = firstname;
-      if(lastname !== undefined) user.lastname = lastname;
-      if(usertype !== undefined) user.usertype = usertype;
+    if (firstname !== undefined) user.firstname = firstname;
+    if (lastname !== undefined) user.lastname = lastname;
+    if (usertype !== undefined) user.usertype = usertype;
 
-      await this.userRepository.save(user);
-      return { message: 'Profile successfully updated' };
+    await this.userRepository.save(user);
+    return { message: 'Profile successfully updated' };
   }
 
-async checkUserExists(username: string): Promise<{ exists: boolean }> {
-  const user = await this.userRepository.findOne({
-    where: { username },
-    select: ['id'], 
-  });
-  
-  return { exists: !!user };
-}
+  async checkUserExists(username: string): Promise<{ exists: boolean }> {
+    const user = await this.userRepository.findOne({
+      where: { username },
+      select: ['id'],
+    });
 
+    return { exists: !!user };
+  }
+
+  async deleteAccount(user: User): Promise<{ message: string }> {
+    try {
+      // Check if user exists
+      const dbUser = await this.userRepository.findOne({
+        where: { id: user.id },
+        relations: ['employer', 'employees'],
+      });
+
+      if (!dbUser) {
+        throw new NotFoundException('User not found');
+      }
+
+      // Prevent company accounts with active employees from being deleted
+      if (
+        dbUser.usertype === UserType.COMPANY &&
+        dbUser.employees?.length > 0
+      ) {
+        throw new ForbiddenException(
+          'Cannot delete company account with active employees',
+        );
+      }
+
+      // If user is an employee, remove employer association
+      if (dbUser.employer) {
+        dbUser.employer = null;
+        await this.userRepository.save(dbUser);
+      }
+
+      // Delete the user
+      await this.userRepository.remove(dbUser);
+
+      return { message: 'Account successfully deleted' };
+    } catch (error) {
+      if (
+        error instanceof NotFoundException ||
+        error instanceof ForbiddenException
+      ) {
+        throw error;
+      }
+      throw new InternalServerErrorException('Failed to delete account');
+    }
+  }
 }

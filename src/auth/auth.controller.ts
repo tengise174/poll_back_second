@@ -1,4 +1,12 @@
-import { Body, Controller, ForbiddenException, Get, Post, Query, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  ForbiddenException,
+  Get,
+  Post,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
 import {
   SignInCredentialsDto,
   SignUpCredentialsDto,
@@ -27,6 +35,7 @@ export class AuthController {
   signIn(
     @Body() signInCredentialsDto: SignInCredentialsDto,
   ): Promise<{ accessToken: string }> {
+    console.log(signInCredentialsDto);
     return this.authService.signIn(signInCredentialsDto);
   }
 
@@ -49,7 +58,7 @@ export class AuthController {
     return this.authService.createEmployee(companyUser, createEmployeeDto);
   }
 
-  @Get("/company/employees")
+  @Get('/company/employees')
   @UseGuards(AuthGuard())
   async getEmployees(@GetUser() companyUser: User) {
     if (companyUser.usertype !== UserType.COMPANY) {
@@ -58,32 +67,47 @@ export class AuthController {
     return this.authService.getEmployees(companyUser);
   }
 
-  @Post("/company/remove-employee")
+  @Post('/company/remove-employee')
   @UseGuards(AuthGuard())
-  async removeEmployee(@GetUser() companyUser: User, @Body() removeEmployeeDto: RemoveEmployeeDto) {
+  async removeEmployee(
+    @GetUser() companyUser: User,
+    @Body() removeEmployeeDto: RemoveEmployeeDto,
+  ) {
     if (companyUser.usertype !== UserType.COMPANY) {
       throw new ForbiddenException('Only company can remove employee');
     }
     return this.authService.removeEmployee(companyUser, removeEmployeeDto);
   }
 
-  @Post("/change-password")
+  @Post('/change-password')
   @UseGuards(AuthGuard())
-  async changePassword(@GetUser() user: User, @Body() changePasswordDto: ChangePasswordDto) {
+  async changePassword(
+    @GetUser() user: User,
+    @Body() changePasswordDto: ChangePasswordDto,
+  ) {
     return this.authService.changePassword(user, changePasswordDto);
   }
 
   @Post('/update-profile')
   @UseGuards(AuthGuard())
-  async updateProfile(@GetUser() user: User, @Body() updateProfileDto: UpdateProfileDto) {
+  async updateProfile(
+    @GetUser() user: User,
+    @Body() updateProfileDto: UpdateProfileDto,
+  ) {
     return this.authService.updateProfile(user, updateProfileDto);
   }
 
   @Get('/check-user')
   async checkUser(@Query('username') username: string) {
-    if(!username) {
+    if (!username) {
       throw new ForbiddenException('No username provided');
     }
     return this.authService.checkUserExists(username);
+  }
+
+  @Post('/delete-account')
+  @UseGuards(AuthGuard())
+  async deleteAccount(@GetUser() user: User) {
+    return this.authService.deleteAccount(user);
   }
 }
