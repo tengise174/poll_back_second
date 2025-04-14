@@ -35,7 +35,6 @@ export class AuthController {
   signIn(
     @Body() signInCredentialsDto: SignInCredentialsDto,
   ): Promise<{ accessToken: string }> {
-    console.log(signInCredentialsDto);
     return this.authService.signIn(signInCredentialsDto);
   }
 
