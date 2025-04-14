@@ -6,6 +6,7 @@ import {
   IsNotEmpty,
   IsNumber,
   IsOptional,
+  IsString,
   ValidateNested,
 } from 'class-validator';
 import { CreateOptionDto } from 'src/options/dto/create-option.dto';
@@ -58,4 +59,8 @@ export class CreateQuestionDto {
 
   @IsBoolean()
   required: boolean;
+
+  @IsString()
+  @IsOptional()
+  poster?: string | null;
 }

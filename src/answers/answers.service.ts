@@ -118,6 +118,7 @@ export class AnswersService {
           startDate: poll.startDate,
           endDate: poll.endDate,
           createdAt: poll.createdAt,
+          poster: poll.poster,
           hasAnswers: true,
         } as unknown as Poll);
       }
@@ -133,6 +134,7 @@ export class AnswersService {
           startDate: poll.startDate,
           endDate: poll.endDate,
           createdAt: poll.createdAt,
+          poster: poll.poster,
           hasAnswers: false,
         } as unknown as Poll);
       }
@@ -156,6 +158,7 @@ export class AnswersService {
         'endDate',
         'themeId',
         'createdAt',
+        'poster',
       ],
       relations: ['failedAttendees'],
     });
@@ -178,7 +181,7 @@ export class AnswersService {
     const questions = await this.questionRepository.find({
       where: { poll: { id: pollId } },
       relations: ['options'],
-      select: ['id', 'content', 'questionType', 'rateNumber', 'rateType'],
+      select: ['id', 'content', 'questionType', 'rateNumber', 'rateType', 'poster'],
     });
 
     // Step 4: Check if user is a failed attendee
@@ -198,6 +201,7 @@ export class AnswersService {
         questionType: question.questionType,
         rateNumber: question.rateNumber,
         rateType: question.rateType,
+        poster: question.poster,
         allOptions:
           question.options?.map((option) => ({
             id: option.id,

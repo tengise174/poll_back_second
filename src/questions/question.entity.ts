@@ -61,6 +61,9 @@ export class Question {
   @Column()
   required: boolean;
 
+  @Column({ type: 'text', nullable: true })
+  poster: string | null;
+
   @OneToMany(() => Option, (option) => option.question)
   options: Option[];
 

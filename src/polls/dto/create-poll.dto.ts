@@ -98,4 +98,7 @@ export class CreatePollDto {
   @Type(() => PollsterDto)
   pollsters: PollsterDto[];
 
+  @IsString()
+  @IsOptional()
+  poster?: string | null;
 }

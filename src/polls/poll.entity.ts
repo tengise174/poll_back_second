@@ -87,4 +87,7 @@ export class Poll {
 
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   createdAt: Date;
+
+  @Column({ type: 'text', nullable: true })
+  poster: string | null;
 }

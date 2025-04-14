@@ -46,6 +46,7 @@ export class PollsService {
       themeId: createPollDto.themeId,
       duration: createPollDto.duration,
       pollsterNumber: createPollDto.pollsterNumber,
+      poster: createPollDto.poster,
       startDate: createPollDto.startDate
         ? new Date(createPollDto.startDate)
         : null,
@@ -79,6 +80,7 @@ export class PollsService {
     poll.themeId = updatePollDto.themeId ?? poll.themeId;
     poll.duration = updatePollDto.duration ?? poll.duration;
     poll.pollsterNumber = updatePollDto.pollsterNumber ?? poll.pollsterNumber;
+    poll.poster = updatePollDto.poster ?? poll.poster;
     poll.startDate = updatePollDto.startDate
       ? new Date(updatePollDto.startDate)
       : poll.startDate;
@@ -126,6 +128,7 @@ export class PollsService {
         'startDate',
         'endDate',
         'createdAt',
+        'poster',
       ],
     });
   }
@@ -382,6 +385,7 @@ export class PollsService {
       isPollsterNumber: poll.isPollsterNumber,
       startDate: poll.startDate,
       endDate: poll.endDate,
+      poster: poll.poster,
       pollsters: poll.pollsters.map((pollster) => ({
         id: pollster.id,
         username: pollster.username,
@@ -395,6 +399,7 @@ export class PollsService {
           questionId: question.id,
           content: question.content,
           questionType: question.questionType,
+          poster: question.poster,
           order: question.order,
         };
 

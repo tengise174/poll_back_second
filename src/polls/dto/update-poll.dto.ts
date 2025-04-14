@@ -91,9 +91,13 @@ export class UpdatePollDto {
   @Type(() => CreateQuestionDto)
   questions: CreateQuestionDto[];
 
-    @IsOptional()
-    @IsArray()
-    @ValidateNested({ each: true })
-    @Type(() => PollsterDto)
-    pollsters: PollsterDto[];
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => PollsterDto)
+  pollsters: PollsterDto[];
+
+  @IsString()
+  @IsOptional()
+  poster?: string | null;
 }
