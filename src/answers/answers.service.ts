@@ -206,6 +206,7 @@ export class AnswersService {
           question.options?.map((option) => ({
             id: option.id,
             content: option.content,
+            poster: option.poster,
           })) || [],
         selectedOptions:
           userAnswer?.selectedOptions?.map((option) => ({

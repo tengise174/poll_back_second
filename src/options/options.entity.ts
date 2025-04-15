@@ -22,6 +22,9 @@ export class Option {
   @IsNumber()
   order: number;
 
+  @Column({ type: 'text', nullable: true })
+  poster: string | null;
+
   @ManyToOne(() => Question, (question) => question.options, {
     onDelete: 'CASCADE',
   })

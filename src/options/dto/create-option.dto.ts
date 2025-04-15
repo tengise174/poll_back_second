@@ -1,5 +1,5 @@
 import { Transform } from 'class-transformer';
-import { IsNotEmpty, IsNumber, IsOptional } from 'class-validator';
+import { IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
 
 export class CreateOptionDto {
   @IsNotEmpty()
@@ -9,4 +9,8 @@ export class CreateOptionDto {
   @IsOptional()
   @Transform(({ value }) => value || null)
   order: number;
+
+    @IsString()
+    @IsOptional()
+    poster?: string | null;
 }

@@ -435,6 +435,7 @@ export class PollsService {
               optionId: option.id,
               content: option.content,
               order: option.order,
+              poster: option.poster,
               selectionCount,
               answeredBy: question.answers
                 .filter((answer) =>
