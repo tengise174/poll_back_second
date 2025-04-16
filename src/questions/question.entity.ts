@@ -1,4 +1,4 @@
-import { IsNumber } from 'class-validator';
+import { IsBoolean, IsNumber } from 'class-validator';
 import { Answer } from 'src/answers/answers.entity';
 import { Option } from 'src/options/options.entity';
 import { Poll } from 'src/polls/poll.entity';
@@ -58,8 +58,17 @@ export class Question {
   @IsNumber()
   order: number;
 
-  @Column()
+  @Column({ nullable: true })
+  @IsBoolean()
   required: boolean;
+
+  @Column({ nullable: true })
+  @IsBoolean()
+  isPointBased: boolean;
+
+  @Column({ nullable: true })
+  @IsBoolean()
+  hasCorrectAnswer: boolean;
 
   @Column({ type: 'text', nullable: true })
   poster: string | null;

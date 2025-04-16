@@ -58,7 +58,16 @@ export class CreateQuestionDto {
   options: CreateOptionDto[];
 
   @IsBoolean()
-  required: boolean;
+  @IsOptional()
+  required?: boolean;
+
+  @IsBoolean()
+  @IsOptional()
+  isPointBased?: boolean;
+
+  @IsBoolean()
+  @IsOptional()
+  hasCorrectAnswer: boolean;
 
   @IsString()
   @IsOptional()

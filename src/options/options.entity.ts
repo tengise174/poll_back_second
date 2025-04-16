@@ -1,5 +1,5 @@
 import { Exclude } from 'class-transformer';
-import { IsNumber } from 'class-validator';
+import { IsBoolean, IsNumber } from 'class-validator';
 import { Answer } from 'src/answers/answers.entity';
 import { Question } from 'src/questions/question.entity';
 import {
@@ -24,6 +24,14 @@ export class Option {
 
   @Column({ type: 'text', nullable: true })
   poster: string | null;
+
+  @Column({nullable: true})
+  @IsNumber()
+  points: number;
+
+  @Column({nullable: true})
+  @IsBoolean()
+  isCorrect: boolean;
 
   @ManyToOne(() => Question, (question) => question.options, {
     onDelete: 'CASCADE',

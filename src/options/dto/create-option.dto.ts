@@ -1,5 +1,11 @@
 import { Transform } from 'class-transformer';
-import { IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
+import {
+  IsBoolean,
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  IsString,
+} from 'class-validator';
 
 export class CreateOptionDto {
   @IsNotEmpty()
@@ -10,7 +16,15 @@ export class CreateOptionDto {
   @Transform(({ value }) => value || null)
   order: number;
 
-    @IsString()
-    @IsOptional()
-    poster?: string | null;
+  @IsString()
+  @IsOptional()
+  poster?: string | null;
+
+  @IsBoolean()
+  @IsOptional()
+  isCorrect?: boolean;
+
+  @IsNumber()
+  @IsOptional()
+  points?: number;
 }

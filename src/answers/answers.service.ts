@@ -181,7 +181,7 @@ export class AnswersService {
     const questions = await this.questionRepository.find({
       where: { poll: { id: pollId } },
       relations: ['options'],
-      select: ['id', 'content', 'questionType', 'rateNumber', 'rateType', 'poster'],
+      select: ['id', 'content', 'questionType', 'rateNumber', 'rateType', 'poster', 'isPointBased', 'hasCorrectAnswer'],
     });
 
     // Step 4: Check if user is a failed attendee
@@ -202,11 +202,15 @@ export class AnswersService {
         rateNumber: question.rateNumber,
         rateType: question.rateType,
         poster: question.poster,
+        isPointBased: question.isPointBased,
+        hasCorrectAnswer: question.hasCorrectAnswer,
         allOptions:
           question.options?.map((option) => ({
             id: option.id,
             content: option.content,
             poster: option.poster,
+            points: option.points,
+            isCorrect: option.isCorrect,
           })) || [],
         selectedOptions:
           userAnswer?.selectedOptions?.map((option) => ({

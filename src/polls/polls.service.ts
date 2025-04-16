@@ -401,6 +401,11 @@ export class PollsService {
           questionType: question.questionType,
           poster: question.poster,
           order: question.order,
+          minAnswerCount: question.minAnswerCount,
+          rateType: question.rateType,
+          rateNumber: question.rateNumber,
+          isPointBased: question.isPointBased,
+          hasCorrectAnswer: question.hasCorrectAnswer,
         };
 
         const answerCount = question.answers.length;
@@ -436,6 +441,8 @@ export class PollsService {
               content: option.content,
               order: option.order,
               poster: option.poster,
+              points: option.points,
+              isCorrect: option.isCorrect,
               selectionCount,
               answeredBy: question.answers
                 .filter((answer) =>
