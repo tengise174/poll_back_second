@@ -174,7 +174,7 @@ export class AnswersService {
     const questions = await this.questionRepository.find({
       where: { poll: { id: pollId } },
       relations: ['options'],
-      select: ['id', 'content', 'questionType', 'rateNumber', 'rateType', 'poster', 'isPointBased', 'hasCorrectAnswer'],
+      select: ['id', 'content', 'questionType', 'rateNumber', 'rateType', 'poster', 'isPointBased', 'hasCorrectAnswer', 'gridColumns', 'gridRows'],
     });
 
     const isFailedAttendee = poll.failedAttendees.some(
@@ -195,6 +195,8 @@ export class AnswersService {
         poster: question.poster,
         isPointBased: question.isPointBased,
         hasCorrectAnswer: question.hasCorrectAnswer,
+        gridColumns: question.gridColumns,
+        gridRows: question.gridRows,
         allOptions:
           question.options?.map((option) => ({
             id: option.id,
@@ -202,6 +204,9 @@ export class AnswersService {
             poster: option.poster,
             points: option.points,
             isCorrect: option.isCorrect,
+            nextQuestionOrder: option.nextQuestionOrder,
+            rowIndex: option.rowIndex,
+            columnIndex: option.columnIndex,
           })) || [],
         selectedOptions:
           userAnswer?.selectedOptions?.map((option) => ({

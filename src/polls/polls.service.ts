@@ -401,6 +401,8 @@ export class PollsService {
           rateNumber: question.rateNumber,
           isPointBased: question.isPointBased,
           hasCorrectAnswer: question.hasCorrectAnswer,
+          gridRows: question.gridRows,
+          gridColumns: question.gridColumns,
         };
 
         const answerCount = question.answers.length;
@@ -439,6 +441,8 @@ export class PollsService {
               points: option.points,
               isCorrect: option.isCorrect,
               selectionCount,
+              rowIndex: option.rowIndex,
+              columnIndex: option.columnIndex,
               answeredBy: question.answers
                 .filter((answer) =>
                   answer.selectedOptions.some(

@@ -17,6 +17,7 @@ export enum QuestionType {
   YES_NO = 'YES_NO',
   TEXT = 'TEXT',
   DROPDOWN = 'DROPDOWN',
+  MULTIPLE_CHOICE_GRID = 'MULTIPLE_CHOICE_GRID',
 }
 
 enum RateType {
@@ -73,6 +74,12 @@ export class Question {
 
   @Column({ type: 'text', nullable: true })
   poster: string | null;
+
+  @Column({ type: 'json', nullable: true, default: '[]' })
+  gridRows: string[];
+
+  @Column({ type: 'json', nullable: true, default: '[]' })
+  gridColumns: string[];
 
   @OneToMany(() => Option, (option) => option.question)
   options: Option[];

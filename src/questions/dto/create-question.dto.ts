@@ -18,6 +18,7 @@ enum QuestionType {
   YES_NO = 'YES_NO',
   TEXT = 'TEXT',
   DROPDOWN = 'DROPDOWN',
+  MULTIPLE_CHOICE_GRID = 'MULTIPLE_CHOICE_GRID',
 }
 enum RateType {
   STAR = 'STAR',
@@ -73,4 +74,14 @@ export class CreateQuestionDto {
   @IsString()
   @IsOptional()
   poster?: string | null;
+
+  @IsArray()
+  @IsString({ each: true })
+  @IsOptional()
+  gridRows: string[];
+
+  @IsArray()
+  @IsString({ each: true })
+  @IsOptional()
+  gridColumns: string[];
 }

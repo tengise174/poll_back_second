@@ -15,7 +15,7 @@ export class Option {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column()
+  @Column({ nullable: true })
   content: string;
 
   @Column({ nullable: true })
@@ -36,6 +36,14 @@ export class Option {
   @Column({nullable: true})
   @IsNumber()
   nextQuestionOrder: number | null;
+
+  @Column({ nullable: true })
+  @IsNumber()
+  rowIndex: number | null;
+
+  @Column({ nullable: true })
+  @IsNumber()
+  columnIndex: number | null;
 
   @ManyToOne(() => Question, (question) => question.options, {
     onDelete: 'CASCADE',

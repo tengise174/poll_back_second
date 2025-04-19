@@ -1,15 +1,16 @@
 import { Transform } from 'class-transformer';
 import {
   IsBoolean,
-  IsNotEmpty,
   IsNumber,
   IsOptional,
   IsString,
 } from 'class-validator';
 
 export class CreateOptionDto {
-  @IsNotEmpty()
-  content: string;
+
+  @IsString()
+  @IsOptional()
+  content?: string;
 
   @IsNumber()
   @IsOptional()
@@ -31,4 +32,12 @@ export class CreateOptionDto {
   @IsNumber()
   @IsOptional()
   nextQuestionOrder?: number | null;
+
+  @IsNumber()
+  @IsOptional()
+  rowIndex?: number | null;
+
+  @IsNumber()
+  @IsOptional()
+  columnIndex?: number | null;
 }
