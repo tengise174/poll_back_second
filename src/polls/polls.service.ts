@@ -212,12 +212,10 @@ export class PollsService {
       };
     }
 
-    // Check if user has already submitted answers
     const userHasAnswered = poll.questions.some((question) =>
       question.answers.some((answer) => answer.user.id === user.id),
     );
 
-    // Check if user has already attended but failed to submit
     const userFailedToSubmit = poll.failedAttendees.some(
       (attendee) => attendee.id === user.id,
     );
@@ -264,7 +262,6 @@ export class PollsService {
       return;
     }
 
-    // Manually insert into the junction table, ignoring duplicates
     await this.pollRepository.query(
       `
       INSERT INTO poll_attendees_failed ("pollId", "userId")
@@ -289,10 +286,8 @@ export class PollsService {
       );
     }
 
-    // Delete questions (and their answers) first
     await this.questionService.deleteQuestionsByPoll(poll);
 
-    // Delete the poll
     const result = await this.pollRepository.delete({
       id: pollId,
       owner: { id: user.id },

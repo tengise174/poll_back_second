@@ -33,6 +33,10 @@ export class Option {
   @IsBoolean()
   isCorrect: boolean;
 
+  @Column({nullable: true})
+  @IsNumber()
+  nextQuestionOrder: number | null;
+
   @ManyToOne(() => Question, (question) => question.options, {
     onDelete: 'CASCADE',
   })

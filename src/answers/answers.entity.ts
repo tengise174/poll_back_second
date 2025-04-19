@@ -20,7 +20,6 @@ export class Answer {
 
   @ManyToOne(() => Question, (question) => question.answers, { eager: false })
   question: Question;
-  // In Answer entity
   @ManyToMany(() => Option, (option) => option.answers, { nullable: true })
   @JoinTable({
     name: 'answer_options',

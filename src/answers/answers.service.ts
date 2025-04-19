@@ -84,14 +84,12 @@ export class AnswersService {
   }
 
   async getUserAnsweredPolls(user: User): Promise<Poll[]> {
-    // Fetch polls where the user has submitted answers
     const answeredPolls = await this.answerRepository.find({
       where: { user: { id: user.id } },
       relations: ['question', 'question.poll'],
       select: ['id', 'createdAt'],
     });
 
-    // Fetch polls where the user is in failedAttendees
     const failedPolls = await this.pollRepository.find({
       where: { failedAttendees: { id: user.id } },
       select: [
@@ -107,7 +105,6 @@ export class AnswersService {
 
     const pollsMap = new Map<string, Poll>();
 
-    // Add answered polls
     answeredPolls.forEach((answer) => {
       const poll = answer.question.poll;
       if (poll && !pollsMap.has(poll.id)) {
@@ -124,7 +121,6 @@ export class AnswersService {
       }
     });
 
-    // Add failed polls (if not already added)
     failedPolls.forEach((poll) => {
       if (!pollsMap.has(poll.id)) {
         pollsMap.set(poll.id, {
@@ -147,7 +143,6 @@ export class AnswersService {
     pollId: string,
     user: User,
   ): Promise<PollAnswerDetails> {
-    // Step 1: Fetch the poll with basic details and failedAttendees
     const poll = await this.pollRepository.findOne({
       where: { id: pollId },
       select: [
@@ -167,7 +162,6 @@ export class AnswersService {
       throw new Error(`Poll ${pollId} not found`);
     }
 
-    // Step 2: Fetch user's answers for this poll
     const answers = await this.answerRepository.find({
       where: {
         user: { id: user.id },
@@ -177,19 +171,16 @@ export class AnswersService {
       select: ['id', 'textAnswer', 'createdAt'],
     });
 
-    // Step 3: Fetch all questions for the poll with their options
     const questions = await this.questionRepository.find({
       where: { poll: { id: pollId } },
       relations: ['options'],
       select: ['id', 'content', 'questionType', 'rateNumber', 'rateType', 'poster', 'isPointBased', 'hasCorrectAnswer'],
     });
 
-    // Step 4: Check if user is a failed attendee
     const isFailedAttendee = poll.failedAttendees.some(
       (attendee) => attendee.id === user.id,
     );
 
-    // Step 5: Map questions with all options, including answers if they exist
     const questionDetails = questions.map((question) => {
       const userAnswer = answers.find(
         (answer) => answer.question.id === question.id,
@@ -221,7 +212,6 @@ export class AnswersService {
       };
     });
 
-    // Step 6: Determine message based on participation
     let message: string | undefined;
     if (answers.length === 0) {
       message = isFailedAttendee
@@ -229,7 +219,6 @@ export class AnswersService {
         : 'You have not submitted answers for this poll';
     }
 
-    // Step 7: Return poll with questions and optional message
     return {
       poll,
       questions: questionDetails,

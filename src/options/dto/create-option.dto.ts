@@ -27,4 +27,8 @@ export class CreateOptionDto {
   @IsNumber()
   @IsOptional()
   points?: number;
+
+  @IsNumber()
+  @IsOptional()
+  nextQuestionOrder?: number | null;
 }

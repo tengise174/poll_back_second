@@ -33,7 +33,6 @@ export class AuthService {
     const { username, password, lastname, firstname, companyname, usertype } =
       signUpCredentialsDto;
 
-    // hash then store it
     const salt = await bcrypt.genSalt();
     const hashedPassword = await bcrypt.hash(password, salt);
 
@@ -49,7 +48,6 @@ export class AuthService {
     try {
       await this.userRepository.save(user);
 
-      // Generate JWT token
       const payload: JwtPayload = { username };
       const accessToken = await this.jwtService.sign(payload);
 
@@ -68,18 +66,15 @@ export class AuthService {
   ): Promise<{ accessToken: string }> {
     const { username, password } = signInCredentialsDto;
 
-    // Find user by username
     const user = await this.userRepository.findOne({
       where: { username },
       relations: [],
     });
 
-    // Check if user exists and password is valid
     if (!user || !(await bcrypt.compare(password, user.password))) {
       throw new BadRequestException('Invalid credentials');
     }
 
-    // Generate JWT token
     const payload: JwtPayload = { username };
     const accessToken = await this.jwtService.sign(payload);
     return { accessToken };
@@ -94,7 +89,6 @@ export class AuthService {
     const salt = await bcrypt.genSalt();
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    // create the new employee as a PERSON user
     const employee = this.userRepository.create({
       username,
       password: hashedPassword,
@@ -158,7 +152,6 @@ export class AuthService {
   ) {
     const { currentPassword, newPassword } = changePasswordDto;
 
-    // Ensure the user is fetched from the database to avoid stale entity issues
     const dbUser = await this.userRepository.findOne({
       where: { id: user.id },
     });
@@ -166,7 +159,6 @@ export class AuthService {
       throw new NotFoundException('User not found');
     }
 
-    // Verify current password
     const isCurrentPasswordValid = await bcrypt.compare(
       currentPassword,
       dbUser.password,
@@ -175,14 +167,11 @@ export class AuthService {
       return { message: "Current password doesn't match" };
     }
 
-    // Hash new password
     const salt = await bcrypt.genSalt();
     const hashedPassword = await bcrypt.hash(newPassword, salt);
 
-    // Update password
     dbUser.password = hashedPassword;
 
-    // Save to database
     try {
       await this.userRepository.save(dbUser);
       return { message: 'Password changed successfully' };
@@ -223,7 +212,6 @@ export class AuthService {
 
   async deleteAccount(user: User): Promise<{ message: string }> {
     try {
-      // Check if user exists
       const dbUser = await this.userRepository.findOne({
         where: { id: user.id },
         relations: ['employer', 'employees'],
@@ -233,7 +221,6 @@ export class AuthService {
         throw new NotFoundException('User not found');
       }
 
-      // Prevent company accounts with active employees from being deleted
       if (
         dbUser.usertype === UserType.COMPANY &&
         dbUser.employees?.length > 0
@@ -243,13 +230,11 @@ export class AuthService {
         );
       }
 
-      // If user is an employee, remove employer association
       if (dbUser.employer) {
         dbUser.employer = null;
         await this.userRepository.save(dbUser);
       }
 
-      // Delete the user
       await this.userRepository.remove(dbUser);
 
       return { message: 'Account successfully deleted' };
