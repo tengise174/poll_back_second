@@ -16,6 +16,7 @@ export enum QuestionType {
   RATING = 'RATING',
   YES_NO = 'YES_NO',
   TEXT = 'TEXT',
+  DROPDOWN = 'DROPDOWN',
 }
 
 enum RateType {
