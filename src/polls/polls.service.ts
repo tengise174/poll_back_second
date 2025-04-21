@@ -403,6 +403,10 @@ export class PollsService {
           hasCorrectAnswer: question.hasCorrectAnswer,
           gridRows: question.gridRows,
           gridColumns: question.gridColumns,
+          minLabel: question.minLabel,
+          maxLabel: question.maxLabel,
+          minValue: question.minValue,
+          maxValue: question.maxValue,
         };
 
         const answerCount = question.answers.length;

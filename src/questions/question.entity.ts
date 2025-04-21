@@ -1,4 +1,4 @@
-import { IsBoolean, IsNumber } from 'class-validator';
+import { IsBoolean, IsNumber, IsString } from 'class-validator';
 import { Answer } from 'src/answers/answers.entity';
 import { Option } from 'src/options/options.entity';
 import { Poll } from 'src/polls/poll.entity';
@@ -19,6 +19,7 @@ export enum QuestionType {
   DROPDOWN = 'DROPDOWN',
   MULTIPLE_CHOICE_GRID = 'MULTIPLE_CHOICE_GRID',
   TICK_BOX_GRID = "TICK_BOX_GRID",
+  LINEAR_SCALE = "LINEAR_SCALE",
 }
 
 enum RateType {
@@ -81,6 +82,22 @@ export class Question {
 
   @Column({ type: 'json', nullable: true, default: '[]' })
   gridColumns: string[];
+
+  @Column({nullable: true})
+  @IsNumber()
+  minValue: number
+
+  @Column({nullable: true})
+  @IsNumber()
+  maxValue: number
+
+  @Column({nullable: true})
+  @IsString()
+  minLabel: string
+
+  @Column({nullable: true})
+  @IsString()
+  maxLabel: string
 
   @OneToMany(() => Option, (option) => option.question)
   options: Option[];

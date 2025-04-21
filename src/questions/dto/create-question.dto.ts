@@ -20,6 +20,7 @@ enum QuestionType {
   DROPDOWN = 'DROPDOWN',
   MULTIPLE_CHOICE_GRID = 'MULTIPLE_CHOICE_GRID',
   TICK_BOX_GRID = "TICK_BOX_GRID",
+  LINEAR_SCALE = "LINEAR_SCALE",
 }
 enum RateType {
   STAR = 'STAR',
@@ -85,4 +86,21 @@ export class CreateQuestionDto {
   @IsString({ each: true })
   @IsOptional()
   gridColumns: string[];
+
+  @IsNumber()
+  @IsOptional()
+  minValue?: number;
+
+  @IsNumber()
+  @IsOptional()
+  maxValue?: number;
+
+  @IsString()
+  @IsOptional()
+  minLabel?: string;
+
+  @IsString()
+  @IsOptional()
+  maxLabel?: string;
 }
+
