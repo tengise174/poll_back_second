@@ -417,7 +417,7 @@ export class PollsService {
         const avgTimeTaken =
           answerCount > 0 ? totalTimeForQuestion / answerCount : 0;
 
-        if (question.questionType === 'TEXT') {
+        if (question.questionType === 'TEXT' || question.questionType === 'DATE' || question.questionType === 'TIME') {
           return {
             ...baseQuestionStats,
             avgTimeTaken,

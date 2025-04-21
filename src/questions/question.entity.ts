@@ -20,6 +20,8 @@ export enum QuestionType {
   MULTIPLE_CHOICE_GRID = 'MULTIPLE_CHOICE_GRID',
   TICK_BOX_GRID = "TICK_BOX_GRID",
   LINEAR_SCALE = "LINEAR_SCALE",
+  DATE = "DATE",
+  TIME = "TIME",
 }
 
 enum RateType {
