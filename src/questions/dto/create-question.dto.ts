@@ -19,6 +19,7 @@ enum QuestionType {
   TEXT = 'TEXT',
   DROPDOWN = 'DROPDOWN',
   MULTIPLE_CHOICE_GRID = 'MULTIPLE_CHOICE_GRID',
+  TICK_BOX_GRID = "TICK_BOX_GRID",
 }
 enum RateType {
   STAR = 'STAR',
