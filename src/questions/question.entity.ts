@@ -22,6 +22,7 @@ export enum QuestionType {
   LINEAR_SCALE = "LINEAR_SCALE",
   DATE = "DATE",
   TIME = "TIME",
+  RANKING = "RANKING",
 }
 
 enum RateType {
