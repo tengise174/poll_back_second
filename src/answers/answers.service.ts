@@ -115,6 +115,7 @@ export class AnswersService {
           startDate: poll.startDate,
           endDate: poll.endDate,
           createdAt: poll.createdAt,
+          answeredAt: answer.createdAt,
           poster: poll.poster,
           hasAnswers: true,
         } as unknown as Poll);

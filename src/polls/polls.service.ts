@@ -133,7 +133,7 @@ export class PollsService {
 
 
   async getAllPollBasic(user: User) {
-    return this.pollRepository.find({
+    const polls = await this.pollRepository.find({
       where: { owner: { id: user.id } },
       select: [
         'id',
@@ -145,7 +145,37 @@ export class PollsService {
         'createdAt',
         'poster',
         'published',
+        'pollsterNumber',
       ],
+      relations: ['pollsters', 'questions', 'questions.answers', 'questions.answers.user'],
+    });
+  
+    return polls.map((poll) => {
+      const submittedUsers = Array.from(
+        new Set(
+          poll.questions
+            .flatMap((question) => question.answers)
+            .filter((answer) => answer.user) // Filter out answers with no user
+            .map((answer) => answer.user.id),
+        ),
+      );
+      const submittedUserNumber = submittedUsers.length;
+  
+      return {
+        id: poll.id,
+        title: poll.title,
+        owner: poll.owner,
+        greetingMessage: poll.greetingMessage,
+        startDate: poll.startDate,
+        endDate: poll.endDate,
+        createdAt: poll.createdAt,
+        poster: poll.poster,
+        published: poll.published,
+        pollsterNumber: poll.pollsterNumber,
+        submittedUserNumber,
+        pollstersLength: poll.pollsters.length,
+        questionLength: poll.questions.length, // Add question length
+      };
     });
   }
 
@@ -354,10 +384,8 @@ export class PollsService {
     const currentDate = new Date();
     let status: string;
 
-    if(!poll.published) {
-      status = 'NOT_PUBLISHED';
-    }
-    else if (poll.startDate && currentDate < poll.startDate) {
+
+    if (poll.startDate && currentDate < poll.startDate) {
       status = 'YET_OPEN';
     } else if (poll.endDate && currentDate > poll.endDate) {
       status = 'CLOSED';
