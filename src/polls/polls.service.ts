@@ -53,6 +53,7 @@ export class PollsService {
       endDate: createPollDto.endDate ? new Date(createPollDto.endDate) : null,
       pollsters: pollsters.filter(Boolean),
       createdAt: new Date(),
+      published: false,
     } as unknown as Partial<Poll>);
 
     const savedPoll = await this.pollRepository.save(poll);
@@ -117,6 +118,20 @@ export class PollsService {
     });
   }
 
+  async togglePublishPoll(pollId: string, user: User): Promise<Poll> {
+    const poll = await this.pollRepository.findOne({
+      where: { id: pollId, owner: { id: user.id } },
+    });
+
+    if (!poll) {
+      throw new NotFoundException('Poll not found or you do not have permission to modify it');
+    }
+
+    poll.published = !poll.published;
+    return await this.pollRepository.save(poll);
+  }
+
+
   async getAllPollBasic(user: User) {
     return this.pollRepository.find({
       where: { owner: { id: user.id } },
@@ -129,6 +144,7 @@ export class PollsService {
         'endDate',
         'createdAt',
         'poster',
+        'published',
       ],
     });
   }
@@ -163,6 +179,12 @@ export class PollsService {
       return {
         message: 'Poll not found',
       };
+    }
+
+    if(!poll.published){
+      return {
+        message: 'Poll is not published',
+      }
     }
 
     if (poll.isAccessLevel) {
@@ -332,7 +354,10 @@ export class PollsService {
     const currentDate = new Date();
     let status: string;
 
-    if (poll.startDate && currentDate < poll.startDate) {
+    if(!poll.published) {
+      status = 'NOT_PUBLISHED';
+    }
+    else if (poll.startDate && currentDate < poll.startDate) {
       status = 'YET_OPEN';
     } else if (poll.endDate && currentDate > poll.endDate) {
       status = 'CLOSED';
@@ -381,6 +406,7 @@ export class PollsService {
       startDate: poll.startDate,
       endDate: poll.endDate,
       poster: poll.poster,
+      published: poll.published,
       pollsters: poll.pollsters.map((pollster) => ({
         id: pollster.id,
         username: pollster.username,

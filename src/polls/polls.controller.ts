@@ -4,6 +4,7 @@ import {
   Delete,
   Get,
   Param,
+  Patch,
   Post,
   Put,
   UseGuards,
@@ -74,6 +75,11 @@ export class PollsController {
     @Body() updatePollDto: CreatePollDto,
   ) {
     return this.pollService.updatePoll(pollId, user, updatePollDto);
+  }
+
+  @Patch('publish/:id')
+  togglePublishPoll(@Param('id') pollId: string, @GetUser() user: User) {
+    return this.pollService.togglePublishPoll(pollId, user);
   }
 
   @Delete(':id')

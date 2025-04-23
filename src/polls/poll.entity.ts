@@ -90,4 +90,7 @@ export class Poll {
 
   @Column({ type: 'text', nullable: true })
   poster: string | null;
+
+  @Column({type: 'boolean', default: false})
+  published: boolean
 }
