@@ -39,6 +39,7 @@ export class PollsService {
       btnLabel: createPollDto.btnLabel,
       endTitle: createPollDto.endTitle,
       thankYouMessage: createPollDto.thankYouMessage,
+      isShowUser: createPollDto.isShowUser,
       isAccessLevel: createPollDto.isAccessLevel,
       isTimeSelected: createPollDto.isTimeSelected,
       isDuration: createPollDto.isDuration,
@@ -73,6 +74,7 @@ export class PollsService {
     poll.endTitle = updatePollDto.endTitle ?? poll.endTitle;
     poll.thankYouMessage =
       updatePollDto.thankYouMessage ?? poll.thankYouMessage;
+    poll.isShowUser = updatePollDto.isShowUser ?? poll.isShowUser;
     poll.isAccessLevel = updatePollDto.isAccessLevel ?? poll.isAccessLevel;
     poll.isTimeSelected = updatePollDto.isTimeSelected ?? poll.isTimeSelected;
     poll.isDuration = updatePollDto.isDuration ?? poll.isDuration;
@@ -124,13 +126,14 @@ export class PollsService {
     });
 
     if (!poll) {
-      throw new NotFoundException('Poll not found or you do not have permission to modify it');
+      throw new NotFoundException(
+        'Poll not found or you do not have permission to modify it',
+      );
     }
 
     poll.published = !poll.published;
     return await this.pollRepository.save(poll);
   }
-
 
   async getAllPollBasic(user: User) {
     const polls = await this.pollRepository.find({
@@ -147,20 +150,25 @@ export class PollsService {
         'published',
         'pollsterNumber',
       ],
-      relations: ['pollsters', 'questions', 'questions.answers', 'questions.answers.user'],
+      relations: [
+        'pollsters',
+        'questions',
+        'questions.answers',
+        'questions.answers.user',
+      ],
     });
-  
+
     return polls.map((poll) => {
       const submittedUsers = Array.from(
         new Set(
           poll.questions
             .flatMap((question) => question.answers)
-            .filter((answer) => answer.user) // Filter out answers with no user
+            .filter((answer) => answer.user)
             .map((answer) => answer.user.id),
         ),
       );
       const submittedUserNumber = submittedUsers.length;
-  
+
       return {
         id: poll.id,
         title: poll.title,
@@ -174,7 +182,7 @@ export class PollsService {
         pollsterNumber: poll.pollsterNumber,
         submittedUserNumber,
         pollstersLength: poll.pollsters.length,
-        questionLength: poll.questions.length, // Add question length
+        questionLength: poll.questions.length,
       };
     });
   }
@@ -211,10 +219,10 @@ export class PollsService {
       };
     }
 
-    if(!poll.published){
+    if (!poll.published) {
       return {
         message: 'Poll is not published',
-      }
+      };
     }
 
     if (poll.isAccessLevel) {
@@ -384,7 +392,6 @@ export class PollsService {
     const currentDate = new Date();
     let status: string;
 
-
     if (poll.startDate && currentDate < poll.startDate) {
       status = 'YET_OPEN';
     } else if (poll.endDate && currentDate > poll.endDate) {
@@ -431,13 +438,14 @@ export class PollsService {
       isDuration: poll.isDuration,
       duration: poll.duration,
       isPollsterNumber: poll.isPollsterNumber,
+      isShowUser: poll.isShowUser,
       startDate: poll.startDate,
       endDate: poll.endDate,
       poster: poll.poster,
       published: poll.published,
       pollsters: poll.pollsters.map((pollster) => ({
         id: pollster.id,
-        username: pollster.username,
+        username: pollster.username, 
       })),
       status,
       submittedUserCount,
@@ -471,13 +479,17 @@ export class PollsService {
         const avgTimeTaken =
           answerCount > 0 ? totalTimeForQuestion / answerCount : 0;
 
-        if (question.questionType === 'TEXT' || question.questionType === 'DATE' || question.questionType === 'TIME') {
+        if (
+          question.questionType === 'TEXT' ||
+          question.questionType === 'DATE' ||
+          question.questionType === 'TIME'
+        ) {
           return {
             ...baseQuestionStats,
             avgTimeTaken,
             answers: question.answers.map((answer) => ({
               textAnswer: answer.textAnswer,
-              answeredBy: answer.user.username,
+              answeredBy: poll.isShowUser ? answer.user.username : answer.user.id,
               createdAt: answer.createdAt,
               timeTaken: answer.timeTaken,
             })),
@@ -508,7 +520,7 @@ export class PollsService {
                   ),
                 )
                 .map((answer) => ({
-                  username: answer.user.username,
+                  username: poll.isShowUser ? answer.user.username : answer.user.id,
                   timeTaken: answer.timeTaken,
                 })),
             };
@@ -521,13 +533,17 @@ export class PollsService {
           };
         }
       }),
-      submittedUsers: Array.from(userTotalTimes.values()),
+      submittedUsers: Array.from(userTotalTimes.values()).map((user) => ({
+        id: user.id,
+        username: poll.isShowUser ? user.username : user.id,
+        totalTimeTaken: user.totalTimeTaken,
+      })),
       failedAttendees: poll.failedAttendees.map((user) => ({
         id: user.id,
-        username: user.username,
+        username: poll.isShowUser ? user.username : undefined,
       })),
     };
 
     return stats;
-  }
+}
 }

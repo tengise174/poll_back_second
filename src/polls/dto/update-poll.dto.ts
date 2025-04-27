@@ -44,6 +44,11 @@ export class UpdatePollDto {
   @IsOptional()
   @IsBoolean()
   @Transform(({ value }) => value || null)
+  isShowUser: boolean;
+
+  @IsOptional()
+  @IsBoolean()
+  @Transform(({ value }) => value || null)
   isAccessLevel: boolean;
 
   @IsOptional()

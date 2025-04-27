@@ -51,6 +51,9 @@ export class Poll {
   questions: Question[];
 
   @Column({ nullable: true })
+  isShowUser: boolean;
+
+  @Column({ nullable: true })
   isAccessLevel: boolean;
 
   @Column({ nullable: true })
