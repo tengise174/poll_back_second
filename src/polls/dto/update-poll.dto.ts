@@ -49,6 +49,11 @@ export class UpdatePollDto {
   @IsOptional()
   @IsBoolean()
   @Transform(({ value }) => value || null)
+  isHasEnterCode: boolean;
+
+  @IsOptional()
+  @IsBoolean()
+  @Transform(({ value }) => value || null)
   isAccessLevel: boolean;
 
   @IsOptional()
@@ -80,6 +85,11 @@ export class UpdatePollDto {
   @IsNumber()
   @Transform(({ value }) => value || null)
   duration: number;
+
+  @IsOptional()
+  @IsNumber()
+  @Transform(({ value }) => value || null)
+  enterCode: number;
 
   @IsOptional()
   @IsNumber()

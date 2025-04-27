@@ -7,6 +7,7 @@ import {
   Patch,
   Post,
   Put,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import { PollsService } from './polls.service';
@@ -27,10 +28,17 @@ export class PollsController {
     private readonly pollService: PollsService,
   ) {}
 
+  @Get('test/:id')
+  getPollForTest(@Param('id') pollId: string, @GetUser() user: User, @Query("enterCode") enterCode: string) {
+    const parsedEnterCode = enterCode ? parseInt(enterCode, 10) : undefined;
+    return this.pollService.getPollForTest(pollId, user, parsedEnterCode);
+  }
+
   @Get()
   getAllPoll(@GetUser() user: User) {
     return this.pollService.getAllPoll(user);
   }
+
 
   @Get('/all')
   getAllPollBasic(@GetUser() user: User) {
@@ -45,11 +53,6 @@ export class PollsController {
   @Get(':id')
   getPollById(@Param('id') pollId: string, @GetUser() user: User) {
     return this.pollService.getPollById(pollId, user);
-  }
-
-  @Get('test/:id')
-  getPollForTest(@Param('id') pollId: string, @GetUser() user: User) {
-    return this.pollService.getPollForTest(pollId, user);
   }
 
   @Post()

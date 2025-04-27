@@ -23,6 +23,113 @@ export class PollsService {
     private questionService: QuestionsService,
   ) {}
 
+  async getPollForTest(pollId: string, user: User, enterCode: number) {
+    const poll = await this.pollRepository.findOne({
+      where: { id: pollId },
+      relations: [
+        'questions',
+        'questions.options',
+        'pollsters',
+        'questions.answers',
+        'questions.answers.user',
+        'failedAttendees',
+      ],
+    });
+
+    if (poll.isHasEnterCode && enterCode === undefined) {
+      return {
+        message: 'Enter code is required',
+      };
+    }
+
+    if (poll.isHasEnterCode && poll.enterCode !== enterCode) {
+      return {
+        message: 'Invalid enter code',
+      };
+    }
+
+    if (!poll) {
+      return {
+        message: 'Poll not found',
+      };
+    }
+
+    if (!poll.published) {
+      return {
+        message: 'Poll is not published',
+      };
+    }
+
+    if (poll.isAccessLevel) {
+      const isPollster = poll.pollsters.some(
+        (pollster) => pollster.id === user.id,
+      );
+      if (!isPollster) {
+        return {
+          message: "Don't have access",
+        };
+      }
+    }
+
+    const currentDate = new Date();
+
+    if (poll.startDate && currentDate < poll.startDate) {
+      return {
+        message: 'Poll has not started yet',
+        startDate: poll.startDate,
+      };
+    }
+
+    if (poll.endDate && currentDate > poll.endDate) {
+      return {
+        message: 'Poll has already ended',
+        endDate: poll.endDate,
+      };
+    }
+
+    const submittedUsers = Array.from(
+      new Set(
+        poll.questions
+          .flatMap((question) => question.answers)
+          .map((answer) => answer.user.id),
+      ),
+    );
+
+    const submittedUserCount = submittedUsers.length;
+
+    if (
+      poll.isPollsterNumber &&
+      poll.pollsterNumber !== null &&
+      submittedUserCount >= poll.pollsterNumber
+    ) {
+      return {
+        message: 'Poll is full',
+      };
+    }
+
+    const userHasAnswered = poll.questions.some((question) =>
+      question.answers.some((answer) => answer.user.id === user.id),
+    );
+
+    const userFailedToSubmit = poll.failedAttendees.some(
+      (attendee) => attendee.id === user.id,
+    );
+
+    if (userHasAnswered) {
+      return {
+        message: 'User has already answered',
+      };
+    }
+
+    if (userFailedToSubmit) {
+      return {
+        message: 'User has already attended',
+      };
+    }
+
+    return poll;
+  }
+
   async createPoll(user: User, createPollDto: CreatePollDto): Promise<Poll> {
     const pollsters = await Promise.all(
       createPollDto.pollsters?.map(async (pollsterDto) => {
@@ -40,12 +147,14 @@ export class PollsService {
       endTitle: createPollDto.endTitle,
       thankYouMessage: createPollDto.thankYouMessage,
       isShowUser: createPollDto.isShowUser,
+      isHasEnterCode: createPollDto.isHasEnterCode,
       isAccessLevel: createPollDto.isAccessLevel,
       isTimeSelected: createPollDto.isTimeSelected,
       isDuration: createPollDto.isDuration,
       isPollsterNumber: createPollDto.isPollsterNumber,
       themeId: createPollDto.themeId,
       duration: createPollDto.duration,
+      enterCode: createPollDto.enterCode,
       pollsterNumber: createPollDto.pollsterNumber,
       poster: createPollDto.poster,
       startDate: createPollDto.startDate
@@ -75,6 +184,7 @@ export class PollsService {
     poll.thankYouMessage =
       updatePollDto.thankYouMessage ?? poll.thankYouMessage;
     poll.isShowUser = updatePollDto.isShowUser ?? poll.isShowUser;
+    poll.isHasEnterCode = updatePollDto.isHasEnterCode ?? poll.isHasEnterCode;
     poll.isAccessLevel = updatePollDto.isAccessLevel ?? poll.isAccessLevel;
     poll.isTimeSelected = updatePollDto.isTimeSelected ?? poll.isTimeSelected;
     poll.isDuration = updatePollDto.isDuration ?? poll.isDuration;
@@ -82,6 +192,7 @@ export class PollsService {
       updatePollDto.isPollsterNumber ?? poll.isPollsterNumber;
     poll.themeId = updatePollDto.themeId ?? poll.themeId;
     poll.duration = updatePollDto.duration ?? poll.duration;
+    poll.enterCode = updatePollDto.enterCode ?? poll.enterCode;
     poll.pollsterNumber = updatePollDto.pollsterNumber ?? poll.pollsterNumber;
     poll.poster = updatePollDto.poster ?? poll.poster;
     poll.startDate = updatePollDto.startDate
@@ -195,101 +306,6 @@ export class PollsService {
 
     if (!poll && poll.owner.id !== user.id) {
       throw new NotFoundException('this poll not found');
-    }
-
-    return poll;
-  }
-
-  async getPollForTest(pollId: string, user: User) {
-    const poll = await this.pollRepository.findOne({
-      where: { id: pollId },
-      relations: [
-        'questions',
-        'questions.options',
-        'pollsters',
-        'questions.answers',
-        'questions.answers.user',
-        'failedAttendees',
-      ],
-    });
-
-    if (!poll) {
-      return {
-        message: 'Poll not found',
-      };
-    }
-
-    if (!poll.published) {
-      return {
-        message: 'Poll is not published',
-      };
-    }
-
-    if (poll.isAccessLevel) {
-      const isPollster = poll.pollsters.some(
-        (pollster) => pollster.id === user.id,
-      );
-      if (!isPollster) {
-        return {
-          message: "Don't have access",
-        };
-      }
-    }
-
-    const currentDate = new Date();
-
-    if (poll.startDate && currentDate < poll.startDate) {
-      return {
-        message: 'Poll has not started yet',
-        startDate: poll.startDate,
-      };
-    }
-
-    if (poll.endDate && currentDate > poll.endDate) {
-      return {
-        message: 'Poll has already ended',
-        endDate: poll.endDate,
-      };
-    }
-
-    const submittedUsers = Array.from(
-      new Set(
-        poll.questions
-          .flatMap((question) => question.answers)
-          .map((answer) => answer.user.id),
-      ),
-    );
-
-    const submittedUserCount = submittedUsers.length;
-
-    if (
-      poll.isPollsterNumber &&
-      poll.pollsterNumber !== null &&
-      submittedUserCount >= poll.pollsterNumber
-    ) {
-      return {
-        message: 'Poll is full',
-      };
-    }
-
-    const userHasAnswered = poll.questions.some((question) =>
-      question.answers.some((answer) => answer.user.id === user.id),
-    );
-
-    const userFailedToSubmit = poll.failedAttendees.some(
-      (attendee) => attendee.id === user.id,
-    );
-
-    if (userHasAnswered) {
-      return {
-        message: 'User has already answered',
-      };
-    }
-
-    if (userFailedToSubmit) {
-      return {
-        message: 'User has already attended',
-      };
     }
 
     return poll;
@@ -438,6 +454,7 @@ export class PollsService {
       isDuration: poll.isDuration,
       duration: poll.duration,
       isPollsterNumber: poll.isPollsterNumber,
+      isHasEnterCode: poll.isHasEnterCode,
       isShowUser: poll.isShowUser,
       startDate: poll.startDate,
       endDate: poll.endDate,
@@ -445,11 +462,12 @@ export class PollsService {
       published: poll.published,
       pollsters: poll.pollsters.map((pollster) => ({
         id: pollster.id,
-        username: pollster.username, 
+        username: pollster.username,
       })),
       status,
       submittedUserCount,
       pollsterNumber: poll.pollsterNumber,
+      enterCode: poll.enterCode,
       avgPollTime,
       questions: questions.map((question) => {
         const baseQuestionStats = {
@@ -489,7 +507,9 @@ export class PollsService {
             avgTimeTaken,
             answers: question.answers.map((answer) => ({
               textAnswer: answer.textAnswer,
-              answeredBy: poll.isShowUser ? answer.user.username : answer.user.id,
+              answeredBy: poll.isShowUser
+                ? answer.user.username
+                : answer.user.id,
               createdAt: answer.createdAt,
               timeTaken: answer.timeTaken,
             })),
@@ -520,7 +540,9 @@ export class PollsService {
                   ),
                 )
                 .map((answer) => ({
-                  username: poll.isShowUser ? answer.user.username : answer.user.id,
+                  username: poll.isShowUser
+                    ? answer.user.username
+                    : answer.user.id,
                   timeTaken: answer.timeTaken,
                 })),
             };
@@ -545,5 +567,5 @@ export class PollsService {
     };
 
     return stats;
-}
+  }
 }

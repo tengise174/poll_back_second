@@ -54,6 +54,9 @@ export class Poll {
   isShowUser: boolean;
 
   @Column({ nullable: true })
+  isHasEnterCode: boolean;
+
+  @Column({ nullable: true })
   isAccessLevel: boolean;
 
   @Column({ nullable: true })
@@ -75,6 +78,9 @@ export class Poll {
   duration: number;
 
   @Column({ nullable: true })
+  enterCode: number;
+
+  @Column({ nullable: true })
   pollsterNumber: number;
 
   @ManyToMany(() => User, { cascade: ['insert', 'update'] })
@@ -94,6 +100,6 @@ export class Poll {
   @Column({ type: 'text', nullable: true })
   poster: string | null;
 
-  @Column({type: 'boolean', default: false})
-  published: boolean
+  @Column({ type: 'boolean', default: false })
+  published: boolean;
 }

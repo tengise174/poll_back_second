@@ -11,7 +11,6 @@ import {
 } from 'class-validator';
 import { CreateQuestionDto } from 'src/questions/dto/create-question.dto';
 
-
 class PollsterDto {
   @IsString()
   username: string;
@@ -46,6 +45,11 @@ export class CreatePollDto {
   @IsBoolean()
   @Transform(({ value }) => value || null)
   isShowUser: boolean;
+
+  @IsOptional()
+  @IsBoolean()
+  @Transform(({ value }) => value || null)
+  isHasEnterCode: boolean;
 
   @IsOptional()
   @IsBoolean()
@@ -85,6 +89,11 @@ export class CreatePollDto {
   @IsOptional()
   @IsNumber()
   @Transform(({ value }) => value || null)
+  enterCode: number;
+
+  @IsOptional()
+  @IsNumber()
+  @Transform(({ value }) => value || null)
   pollsterNumber: number;
 
   @IsOptional()
@@ -96,7 +105,7 @@ export class CreatePollDto {
   @ValidateNested({ each: true })
   @Type(() => CreateQuestionDto)
   questions: CreateQuestionDto[];
-  
+
   @IsOptional()
   @IsArray()
   @ValidateNested({ each: true })
