@@ -70,9 +70,7 @@ export class PollsService {
         };
       }
     }
-
     const currentDate = new Date();
-
     if (poll.startDate && currentDate < poll.startDate) {
       return {
         message: 'Poll has not started yet',
@@ -146,6 +144,7 @@ export class PollsService {
       btnLabel: createPollDto.btnLabel,
       endTitle: createPollDto.endTitle,
       thankYouMessage: createPollDto.thankYouMessage,
+      category: createPollDto.category,
       isShowUser: createPollDto.isShowUser,
       isHasEnterCode: createPollDto.isHasEnterCode,
       isAccessLevel: createPollDto.isAccessLevel,
@@ -183,6 +182,7 @@ export class PollsService {
     poll.endTitle = updatePollDto.endTitle ?? poll.endTitle;
     poll.thankYouMessage =
       updatePollDto.thankYouMessage ?? poll.thankYouMessage;
+    poll.category = updatePollDto.category ?? poll.category;
     poll.isShowUser = updatePollDto.isShowUser ?? poll.isShowUser;
     poll.isHasEnterCode = updatePollDto.isHasEnterCode ?? poll.isHasEnterCode;
     poll.isAccessLevel = updatePollDto.isAccessLevel ?? poll.isAccessLevel;
@@ -254,6 +254,7 @@ export class PollsService {
         'title',
         'owner',
         'greetingMessage',
+        'category',
         'startDate',
         'endDate',
         'createdAt',
@@ -285,6 +286,7 @@ export class PollsService {
         title: poll.title,
         owner: poll.owner,
         greetingMessage: poll.greetingMessage,
+        category: poll.category,
         startDate: poll.startDate,
         endDate: poll.endDate,
         createdAt: poll.createdAt,
@@ -449,6 +451,7 @@ export class PollsService {
     const stats = {
       pollId: poll.id,
       title: poll.title,
+      category: poll.category,
       createdAt: poll.createdAt,
       isAccessLevel: poll.isAccessLevel,
       isDuration: poll.isDuration,

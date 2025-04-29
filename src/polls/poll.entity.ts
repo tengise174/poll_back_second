@@ -34,6 +34,9 @@ export class Poll {
   @Column({ nullable: true })
   themeId: number;
 
+  @Column({ nullable: true })
+  category: string;
+
   @ManyToOne(() => User, (user) => user.ownedPolls, { eager: false })
   @Exclude({ toPlainOnly: true })
   owner: User;

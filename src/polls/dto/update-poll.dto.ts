@@ -3,6 +3,7 @@ import {
   IsArray,
   IsBoolean,
   IsDateString,
+  IsEnum,
   IsNotEmpty,
   IsNumber,
   IsOptional,
@@ -14,6 +15,19 @@ import { CreateQuestionDto } from 'src/questions/dto/create-question.dto';
 class PollsterDto {
   @IsString()
   username: string;
+}
+
+enum Categories {
+  EDUCATION = 'EDUCATION',
+  HEALTH = 'HEALTH',
+  POLITICS = 'POLITICS',
+  ECONOMY = 'ECONOMY',
+  SOCIETY = 'SOCIETY',
+  TECHNOLOGY = 'TECHNOLOGY',
+  ENVIRONMENT = 'ENVIRONMENT',
+  CULTURE = 'CULTURE',
+  SPORTS = 'SPORTS',
+  OTHER = 'OTHER',
 }
 
 export class UpdatePollDto {
@@ -40,6 +54,11 @@ export class UpdatePollDto {
   @IsString()
   @Transform(({ value }) => value || null)
   thankYouMessage: string;
+
+  @IsEnum(Categories)
+  @IsOptional()
+  @Transform(({ value }) => value || null)
+  category: Categories;
 
   @IsOptional()
   @IsBoolean()
