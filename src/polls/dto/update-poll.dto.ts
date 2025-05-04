@@ -10,7 +10,7 @@ import {
   IsString,
   ValidateNested,
 } from 'class-validator';
-import { CreateQuestionDto } from 'src/questions/dto/create-question.dto';
+import { QuestionDto } from 'src/questions/dto/question.dto';
 
 class PollsterDto {
   @IsString()
@@ -122,8 +122,8 @@ export class UpdatePollDto {
 
   @IsArray()
   @ValidateNested({ each: true })
-  @Type(() => CreateQuestionDto)
-  questions: CreateQuestionDto[];
+  @Type(() => QuestionDto)
+  questions: QuestionDto[];
 
   @IsOptional()
   @IsArray()

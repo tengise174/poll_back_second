@@ -23,6 +23,135 @@ export class PollsService {
     private questionService: QuestionsService,
   ) {}
 
+  async createPoll(user: User, createPollDto: CreatePollDto): Promise<Poll> {
+    const pollsters = await Promise.all(
+      createPollDto.pollsters?.map(async (pollsterDto) => {
+        return this.userRepository.findOne({
+          where: { username: pollsterDto.username },
+        });
+      }) || [],
+    );
+
+    const poll = this.pollRepository.create({
+      title: createPollDto.title,
+      owner: user,
+      greetingMessage: createPollDto.greetingMessage,
+      btnLabel: createPollDto.btnLabel,
+      endTitle: createPollDto.endTitle,
+      thankYouMessage: createPollDto.thankYouMessage,
+      category: createPollDto.category,
+      isShowUser: createPollDto.isShowUser,
+      isHasEnterCode: createPollDto.isHasEnterCode,
+      isAccessLevel: createPollDto.isAccessLevel,
+      isTimeSelected: createPollDto.isTimeSelected,
+      isDuration: createPollDto.isDuration,
+      isPollsterNumber: createPollDto.isPollsterNumber,
+      themeId: createPollDto.themeId,
+      duration: createPollDto.duration,
+      enterCode: createPollDto.enterCode,
+      pollsterNumber: createPollDto.pollsterNumber,
+      poster: createPollDto.poster,
+      startDate: createPollDto.startDate
+        ? new Date(createPollDto.startDate)
+        : null,
+      endDate: createPollDto.endDate ? new Date(createPollDto.endDate) : null,
+      pollsters: pollsters.filter(Boolean),
+      createdAt: new Date(),
+      published: false,
+    } as unknown as Partial<Poll>);
+
+    const savedPoll = await this.pollRepository.save(poll);
+    createPollDto.questions.map((dto) =>
+      this.questionService.createQuestion(savedPoll, dto),
+    );
+    return savedPoll;
+  }
+
+  async updatePoll(pollId: string, user: User, updatePollDto: UpdatePollDto) {
+    const poll = await this.pollRepository.findOne({
+      where: { id: pollId, owner: { id: user.id } },
+      relations: ['questions', 'questions.options', 'pollsters'],
+    });
+
+    if (!poll) {
+      throw new Error('Poll not found or you are not authorized to update it');
+    }
+
+    poll.title = updatePollDto.title ?? poll.title;
+    poll.greetingMessage =
+      updatePollDto.greetingMessage ?? poll.greetingMessage;
+    poll.btnLabel = updatePollDto.btnLabel ?? poll.btnLabel;
+    poll.endTitle = updatePollDto.endTitle ?? poll.endTitle;
+    poll.thankYouMessage =
+      updatePollDto.thankYouMessage ?? poll.thankYouMessage;
+    poll.category = updatePollDto.category ?? poll.category;
+    poll.isShowUser = updatePollDto.isShowUser ?? poll.isShowUser;
+    poll.isHasEnterCode = updatePollDto.isHasEnterCode ?? poll.isHasEnterCode;
+    poll.isAccessLevel = updatePollDto.isAccessLevel ?? poll.isAccessLevel;
+    poll.isTimeSelected = updatePollDto.isTimeSelected ?? poll.isTimeSelected;
+    poll.isDuration = updatePollDto.isDuration ?? poll.isDuration;
+    poll.isPollsterNumber =
+      updatePollDto.isPollsterNumber ?? poll.isPollsterNumber;
+    poll.themeId = updatePollDto.themeId ?? poll.themeId;
+    poll.duration = updatePollDto.duration ?? poll.duration;
+    poll.enterCode = updatePollDto.enterCode ?? poll.enterCode;
+    poll.pollsterNumber = updatePollDto.pollsterNumber ?? poll.pollsterNumber;
+    poll.poster = updatePollDto.poster ?? poll.poster;
+    poll.startDate = updatePollDto.startDate
+      ? new Date(updatePollDto.startDate)
+      : poll.startDate;
+    poll.endDate = updatePollDto.endDate
+      ? new Date(updatePollDto.endDate)
+      : poll.endDate;
+
+    if (updatePollDto.pollsters) {
+      const pollsters = await Promise.all(
+        updatePollDto.pollsters.map(async (pollsterDto) => {
+          return this.userRepository.findOne({
+            where: { username: pollsterDto.username },
+          });
+        }),
+      );
+      poll.pollsters = pollsters.filter(Boolean);
+    }
+
+    const savedPoll = await this.pollRepository.save(poll);
+
+    // Handle questions
+    const questionIdsInRequest = updatePollDto.questions
+      .filter((q) => q.id && q.id !== null)
+      .map((q) => q.id);
+    const questionsToDelete = poll.questions.filter(
+      (q) => !questionIdsInRequest.includes(q.id),
+    );
+
+    for (const question of questionsToDelete) {
+      await this.questionRepository.remove(question);
+    }
+
+    for (const questionDto of updatePollDto.questions) {
+      if (questionDto.id && questionDto.id !== null) {
+        // Update existing question
+        await this.questionService.updateQuestion(questionDto.id, questionDto);
+      } else {
+        // Create new question (id is null or undefined)
+        await this.questionService.createQuestion(poll, questionDto);
+      }
+    }
+
+    return await this.pollRepository.findOne({
+      where: { id: pollId },
+      relations: ['questions', 'questions.options', 'pollsters', 'owner'],
+    });
+  }
+
+  async getAllPoll(user: User) {
+    return this.pollRepository.find({
+      where: { owner: { id: user.id } },
+      relations: ['questions'],
+    });
+  }
+
   async getPollForTest(pollId: string, user: User, enterCode: number) {
     const poll = await this.pollRepository.findOne({
       where: { id: pollId },
@@ -126,109 +255,6 @@ export class PollsService {
     }
 
     return poll;
-  }
-
-  async createPoll(user: User, createPollDto: CreatePollDto): Promise<Poll> {
-    const pollsters = await Promise.all(
-      createPollDto.pollsters?.map(async (pollsterDto) => {
-        return this.userRepository.findOne({
-          where: { username: pollsterDto.username },
-        });
-      }) || [],
-    );
-
-    const poll = this.pollRepository.create({
-      title: createPollDto.title,
-      owner: user,
-      greetingMessage: createPollDto.greetingMessage,
-      btnLabel: createPollDto.btnLabel,
-      endTitle: createPollDto.endTitle,
-      thankYouMessage: createPollDto.thankYouMessage,
-      category: createPollDto.category,
-      isShowUser: createPollDto.isShowUser,
-      isHasEnterCode: createPollDto.isHasEnterCode,
-      isAccessLevel: createPollDto.isAccessLevel,
-      isTimeSelected: createPollDto.isTimeSelected,
-      isDuration: createPollDto.isDuration,
-      isPollsterNumber: createPollDto.isPollsterNumber,
-      themeId: createPollDto.themeId,
-      duration: createPollDto.duration,
-      enterCode: createPollDto.enterCode,
-      pollsterNumber: createPollDto.pollsterNumber,
-      poster: createPollDto.poster,
-      startDate: createPollDto.startDate
-        ? new Date(createPollDto.startDate)
-        : null,
-      endDate: createPollDto.endDate ? new Date(createPollDto.endDate) : null,
-      pollsters: pollsters.filter(Boolean),
-      createdAt: new Date(),
-      published: false,
-    } as unknown as Partial<Poll>);
-
-    const savedPoll = await this.pollRepository.save(poll);
-    createPollDto.questions.map((dto) =>
-      this.questionService.createQuestion(savedPoll, dto),
-    );
-    return savedPoll;
-  }
-
-  async updatePoll(pollId: string, user: User, updatePollDto: UpdatePollDto) {
-    const poll = await this.getPollById(pollId, user);
-
-    poll.title = updatePollDto.title;
-    poll.greetingMessage =
-      updatePollDto.greetingMessage ?? poll.greetingMessage;
-    poll.btnLabel = updatePollDto.btnLabel ?? poll.btnLabel;
-    poll.endTitle = updatePollDto.endTitle ?? poll.endTitle;
-    poll.thankYouMessage =
-      updatePollDto.thankYouMessage ?? poll.thankYouMessage;
-    poll.category = updatePollDto.category ?? poll.category;
-    poll.isShowUser = updatePollDto.isShowUser ?? poll.isShowUser;
-    poll.isHasEnterCode = updatePollDto.isHasEnterCode ?? poll.isHasEnterCode;
-    poll.isAccessLevel = updatePollDto.isAccessLevel ?? poll.isAccessLevel;
-    poll.isTimeSelected = updatePollDto.isTimeSelected ?? poll.isTimeSelected;
-    poll.isDuration = updatePollDto.isDuration ?? poll.isDuration;
-    poll.isPollsterNumber =
-      updatePollDto.isPollsterNumber ?? poll.isPollsterNumber;
-    poll.themeId = updatePollDto.themeId ?? poll.themeId;
-    poll.duration = updatePollDto.duration ?? poll.duration;
-    poll.enterCode = updatePollDto.enterCode ?? poll.enterCode;
-    poll.pollsterNumber = updatePollDto.pollsterNumber ?? poll.pollsterNumber;
-    poll.poster = updatePollDto.poster ?? poll.poster;
-    poll.startDate = updatePollDto.startDate
-      ? new Date(updatePollDto.startDate)
-      : poll.startDate;
-    poll.endDate = updatePollDto.endDate
-      ? new Date(updatePollDto.endDate)
-      : poll.endDate;
-
-    if (updatePollDto.pollsters) {
-      const pollsters = await Promise.all(
-        updatePollDto.pollsters.map(async (pollsterDto) => {
-          return this.userRepository.findOne({
-            where: { username: pollsterDto.username },
-          });
-        }),
-      );
-
-      poll.pollsters = pollsters.filter(Boolean);
-    }
-
-    await this.questionService.deleteQuestionsByPoll(poll);
-
-    const savedPoll = await this.pollRepository.save(poll);
-    updatePollDto.questions.map((dto) =>
-      this.questionService.createQuestion(savedPoll, dto),
-    );
-
-    return await this.getPollById(pollId, user);
-  }
-
-  async getAllPoll(user: User) {
-    return this.pollRepository.find({
-      where: { owner: { id: user.id } },
-      relations: ['questions'],
-    });
   }
 
   async togglePublishPoll(pollId: string, user: User): Promise<Poll> {

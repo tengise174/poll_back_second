@@ -50,7 +50,6 @@ export class AuthController {
     @GetUser() companyUser: User,
     @Body() createEmployeeDto: CreateEmployeeDto,
   ) {
-    console.log(createEmployeeDto);
     if (companyUser.usertype !== 'COMPANY') {
       throw new Error('Only company can add employee');
     }

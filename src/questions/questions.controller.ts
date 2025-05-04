@@ -36,7 +36,6 @@ export class QuestionsController {
     @Param('id') pollId: string,
     @Body() createQuestionDto: CreateQuestionDto,
   ) {
-    console.log(pollId);
     const poll = await this.pollRepository.findOne({ where: { id: pollId } });
     return this.questionService.createQuestion(poll, createQuestionDto);
   }

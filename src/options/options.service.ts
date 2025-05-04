@@ -4,7 +4,7 @@ import { Repository } from 'typeorm';
 import { Option } from './options.entity';
 import { CreateOptionDto } from './dto/create-option.dto';
 import { Question } from 'src/questions/question.entity';
-
+import { OptionDto } from './dto/option.dto';
 @Injectable()
 export class OptionsService {
   constructor(
@@ -13,12 +13,62 @@ export class OptionsService {
   ) {}
 
   async createOption(
-    createOptionDto: CreateOptionDto,
+    optionDto: OptionDto,
     question: Question,
   ): Promise<Option> {
-    const option = this.optionRepository.create(createOptionDto);
-    option.question = question;
+    if (!question.id) {
+      throw new Error('Question must have a valid ID');
+    }
+    console.log("option", optionDto);
+    console.log("question", question);
+    const option = this.optionRepository.create({
+      content: optionDto.content,
+      order: optionDto.order,
+      poster: optionDto.poster,
+      points: optionDto.points,
+      isCorrect: optionDto.isCorrect,
+      nextQuestionOrder: optionDto.nextQuestionOrder,
+      rowIndex: optionDto.rowIndex,
+      columnIndex: optionDto.columnIndex,
+      question,
+    });
     return this.optionRepository.save(option);
+  }
+
+  async updateOption(
+    optionId: string,
+    optionDto: OptionDto,
+  ): Promise<Option> {
+    const option = await this.optionRepository.findOne({
+      where: { id: optionId },
+    });
+
+    if (!option) {
+      throw new Error(`Option with ID ${optionId} not found`);
+    }
+
+    option.content = optionDto.content ?? option.content;
+    option.order = optionDto.order ?? option.order;
+    option.poster = optionDto.poster ?? option.poster;
+    option.points = optionDto.points ?? option.points;
+    option.isCorrect = optionDto.isCorrect ?? option.isCorrect;
+    option.nextQuestionOrder = optionDto.nextQuestionOrder ?? option.nextQuestionOrder;
+    option.rowIndex = optionDto.rowIndex ?? option.rowIndex;
+    option.columnIndex = optionDto.columnIndex ?? option.columnIndex;
+
+    return this.optionRepository.save(option);
+  }
+
+  async deleteOption(optionId: string): Promise<void> {
+    const option = await this.optionRepository.findOne({
+      where: { id: optionId },
+    });
+
+    if (!option) {
+      throw new Error(`Option with ID ${optionId} not found`);
+    }
+
+    await this.optionRepository.remove(option);
   }
 
   async createOptions(createOptionDto: CreateOptionDto[], question: Question) {
