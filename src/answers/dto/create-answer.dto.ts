@@ -1,5 +1,4 @@
 import { IsArray, IsNumber, IsOptional, IsString } from 'class-validator';
-//aaa
 export class CreateAnswerDto {
   @IsString()
   questionId: string;

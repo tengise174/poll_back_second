@@ -19,8 +19,6 @@ export class OptionsService {
     if (!question.id) {
       throw new Error('Question must have a valid ID');
     }
-    console.log("option", optionDto);
-    console.log("question", question);
     const option = this.optionRepository.create({
       content: optionDto.content,
       order: optionDto.order,

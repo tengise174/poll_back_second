@@ -74,7 +74,6 @@ export class QuestionsService {
       throw new Error(`Question with ID ${questionId} not found`);
     }
 
-    // Update question fields
     question.content = questionDto.content ?? question.content;
     question.questionType = questionDto.questionType ?? question.questionType;
     question.minAnswerCount = questionDto.minAnswerCount ?? question.minAnswerCount;
@@ -95,7 +94,6 @@ export class QuestionsService {
 
     const savedQuestion = await this.questionRepository.save(question);
 
-    // Handle options
     if (questionDto.options) {
       const optionIdsInRequest = questionDto.options
         .filter((o) => o.id && o.id !== null)
@@ -104,26 +102,19 @@ export class QuestionsService {
         (o) => !optionIdsInRequest.includes(o.id),
       );
 
-      // Delete options not in the request
       for (const option of optionsToDelete) {
         await this.optionService.deleteOption(option.id);
       }
 
-      // Update or create options
       for (const optionDto of questionDto.options) {
         if (optionDto.id && optionDto.id !== null) {
-          // Update existing option
           await this.optionService.updateOption(optionDto.id, optionDto);
         } else {
-          // Create new optio
           await this.optionService.createOption(optionDto, question);
         }
       }
     }
 
-    // Save the updated questi
-
-    // Fetch the question with options and poll to ensure complete data
     return await this.questionRepository.findOne({
       where: { id: questionId },
       relations: ['options', 'poll'],

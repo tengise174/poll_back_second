@@ -117,7 +117,6 @@ export class PollsService {
 
     const savedPoll = await this.pollRepository.save(poll);
 
-    // Handle questions
     const questionIdsInRequest = updatePollDto.questions
       .filter((q) => q.id && q.id !== null)
       .map((q) => q.id);
@@ -131,10 +130,8 @@ export class PollsService {
 
     for (const questionDto of updatePollDto.questions) {
       if (questionDto.id && questionDto.id !== null) {
-        // Update existing question
         await this.questionService.updateQuestion(questionDto.id, questionDto);
       } else {
-        // Create new question (id is null or undefined)
         await this.questionService.createQuestion(poll, questionDto);
       }
     }
