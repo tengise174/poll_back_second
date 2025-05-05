@@ -18,8 +18,12 @@ export class Answer {
   @ManyToOne(() => User, (user) => user.answers, { eager: false })
   user: User;
 
-  @ManyToOne(() => Question, (question) => question.answers, { eager: false })
+  @ManyToOne(() => Question, (question) => question.answers, {
+    eager: false,
+    onDelete: 'CASCADE',
+  })
   question: Question;
+
   @ManyToMany(() => Option, (option) => option.answers, { nullable: true })
   @JoinTable({
     name: 'answer_options',

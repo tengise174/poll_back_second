@@ -50,7 +50,10 @@ export class Poll {
   )
   pollsters: User[];
 
-  @OneToMany(() => Question, (question) => question.poll)
+  @OneToMany(() => Question, (question) => question.poll, {
+    cascade: true,
+    onDelete: 'CASCADE',
+  })
   questions: Question[];
 
   @Column({ nullable: true })

@@ -53,6 +53,7 @@ export class Option {
 
   @ManyToMany(() => Answer, (answer) => answer.selectedOptions, {
     eager: false,
+    onDelete: 'CASCADE',
   })
   answers: Answer[];
 }
